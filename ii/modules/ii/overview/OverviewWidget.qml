@@ -4,6 +4,7 @@ import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.modules.common.functions
 import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
@@ -14,6 +15,7 @@ import Quickshell.Hyprland
 Item {
     id: root
     required property var screen
+    property real wheelAccum: 0
     readonly property HyprlandMonitor monitor: Hyprland.monitorFor(screen)
     readonly property var toplevels: ToplevelManager.toplevels
     // Clamp to avoid lock-screen temp workspace (2147483647 - N) leaking into UI
@@ -90,7 +92,15 @@ Item {
         const ws = GlobalStates.overviewFocusedWorkspaceId > 0
             ? GlobalStates.overviewFocusedWorkspaceId
             : effectiveActiveWorkspaceId;
-        let idx = root.indexForWorkspaceId(ws);
+        let idx = -1;
+        for (let i = 0; i < model.length; ++i) {
+            if (model[i].id === ws) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx === -1)
+            idx = 0;
         idx = (idx + dir + model.length) % model.length;
         const newWs = model[idx].id;
         GlobalStates.overviewFocusedWorkspaceId = newWs;
@@ -128,10 +138,13 @@ Item {
             acceptedButtons: Qt.NoButton
             enabled: root.overviewNavigationActive
             onWheel: wheel => {
-                const steps = WheelUtils.getSteps(wheel.angleDelta.y)
-                if (steps !== 0)
-                    root.cycleOverviewWorkspace(-steps);
-                wheel.accepted = true;
+                const r = WheelUtils.getSteps(wheel.angleDelta.y, root.wheelAccum)
+                root.wheelAccum = r.accum
+                if (r.steps > 0)
+                    Hyprland.dispatch("hl.dsp.global('quickshell:overviewPrev')")
+                else if (r.steps < 0)
+                    Hyprland.dispatch("hl.dsp.global('quickshell:overviewNext')")
+                wheel.accepted = true
             }
         }
 
@@ -209,14 +222,6 @@ Item {
                         id: workspaceArea
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
-                        onWheel: wheel => {
-                            if (root.overviewNavigationActive) {
-                                const steps = WheelUtils.getSteps(wheel.angleDelta.y)
-                                if (steps !== 0)
-                                    root.cycleOverviewWorkspace(-steps);
-                                wheel.accepted = true;
-                            }
-                        }
                         onPressed: {
                             if (GlobalStates.overviewDraggingTargetWorkspace === -1) {
                                 if (workspace.isTrailingEmpty) {
@@ -337,14 +342,6 @@ Item {
                         onExited: hovered = false // For hover color change
                         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                         drag.target: parent
-                        onWheel: wheel => {
-                            if (root.overviewNavigationActive) {
-                                const steps = WheelUtils.getSteps(wheel.angleDelta.y)
-                                if (steps !== 0)
-                                    root.cycleOverviewWorkspace(-steps);
-                                wheel.accepted = true;
-                            }
-                        }
                         onPressed: (mouse) => {
                             GlobalStates.overviewDraggingFromWorkspace = windowData?.workspace.id
                             window.pressed = true

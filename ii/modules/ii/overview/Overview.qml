@@ -367,15 +367,27 @@ Scope {
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
         }
     }
+    property real lastWheelShortcut: 0
+
     GlobalShortcut {
         name: "overviewNext"
         description: "Workspace overview: cycle next (Win+Tab)"
-        onPressed: overviewScope.openGrabbedMode(1)
+        onPressed: {
+            const now = Date.now();
+            if (now - overviewScope.lastWheelShortcut < 150) return;
+            overviewScope.lastWheelShortcut = now;
+            overviewScope.openGrabbedMode(1);
+        }
     }
     GlobalShortcut {
         name: "overviewPrev"
         description: "Workspace overview: cycle prev (Win+Shift+Tab)"
-        onPressed: overviewScope.openGrabbedMode(-1)
+        onPressed: {
+            const now = Date.now();
+            if (now - overviewScope.lastWheelShortcut < 150) return;
+            overviewScope.lastWheelShortcut = now;
+            overviewScope.openGrabbedMode(-1);
+        }
     }
     GlobalShortcut {
         name: "overviewCommit"

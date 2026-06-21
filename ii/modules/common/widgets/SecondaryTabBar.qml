@@ -8,15 +8,17 @@ import qs.modules.common.functions
 TabBar {
     id: root
     property real indicatorPadding: 8
+    property real wheelAccum: 0
     Layout.fillWidth: true
 
     background: Item {
         WheelHandler {
             onWheel: (event) => {
-                const steps = WheelUtils.getSteps(event.angleDelta.y)
-                for (let i = 0; i < Math.abs(steps); i++) {
-                    if (steps < 0) root.incrementCurrentIndex();
-                    else if (steps > 0) root.decrementCurrentIndex();
+                const r = WheelUtils.getSteps(event.angleDelta.y, root.wheelAccum)
+                root.wheelAccum = r.accum
+                for (let i = 0; i < Math.abs(r.steps); i++) {
+                    if (r.steps < 0) root.incrementCurrentIndex();
+                    else if (r.steps > 0) root.decrementCurrentIndex();
                 }
             }
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad

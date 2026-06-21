@@ -10,6 +10,7 @@ Item {
     // Layout.topMargin: 10
     anchors.topMargin: 10
     property int monthShift: 0
+    property real wheelAccum: 0
     property var viewingDate: CalendarLayout.getDateInXMonthsTime(monthShift)
     property var calendarLayout: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0)
     width: calendarColumn.width
@@ -29,8 +30,9 @@ Item {
     MouseArea {
         anchors.fill: parent
         onWheel: (event) => {
-            const steps = WheelUtils.getSteps(event.angleDelta.y)
-            monthShift -= steps;
+            const r = WheelUtils.getSteps(event.angleDelta.y, wheelAccum)
+            wheelAccum = r.accum
+            monthShift -= r.steps;
         }
     }
 

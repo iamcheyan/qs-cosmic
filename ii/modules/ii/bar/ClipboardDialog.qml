@@ -8,7 +8,7 @@ import qs.modules.common.functions
 import Quickshell
 
 WindowDialog {
-    id: root
+    id: clipboardDialog
     backgroundHeight: itemsPerPage * 23 + 56
     backgroundWidth: 380
     anchorPosition: 1
@@ -17,6 +17,7 @@ WindowDialog {
     property int keyboardIndex: 0
     property int currentPage: 0
     property int itemsPerPage: 20
+    property real wheelAccum: 0
     property var pageEntries: Cliphist.entries.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage)
     property int totalPages: Math.max(1, Math.ceil(Cliphist.entries.length / itemsPerPage))
 
@@ -26,7 +27,7 @@ WindowDialog {
             currentPage = 0;
             keyboardIndex = 0;
             pageEntries = Cliphist.entries.slice(0, itemsPerPage);
-            root.forceActiveFocus();
+            clipboardDialog.forceActiveFocus();
             Cliphist.refresh();
         }
     }
@@ -56,7 +57,7 @@ WindowDialog {
         const absIndex = currentPage * itemsPerPage + keyboardIndex;
         if (absIndex >= 0 && absIndex < Cliphist.entries.length) {
             Cliphist.copy(Cliphist.entries[absIndex]);
-            root.dismiss();
+            clipboardDialog.dismiss();
         }
     }
 
@@ -97,7 +98,7 @@ WindowDialog {
         interactive: false
 
         model: ScriptModel {
-            values: root.pageEntries
+            values: clipboardDialog.pageEntries
         }
 
         delegate: ClipboardItem {
@@ -105,11 +106,11 @@ WindowDialog {
             required property int index
             entry: modelData
             width: ListView.view.width
-            keySelected: root.keyboardIndex === index
-            onItemClicked: root.dismiss()
+            keySelected: clipboardDialog.keyboardIndex === index
+            onItemClicked: clipboardDialog.dismiss()
             onHoveredChanged: {
                 if (hovered) {
-                    root.keyboardIndex = index;
+                    clipboardDialog.keyboardIndex = index;
                 }
             }
         }
@@ -118,24 +119,26 @@ WindowDialog {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
             onWheel: (event) => {
-                const steps = WheelUtils.getSteps(event.angleDelta.y)
+                const r = WheelUtils.getSteps(event.angleDelta.y, clipboardDialog.wheelAccum)
+                clipboardDialog.wheelAccum = r.accum
+                const steps = r.steps
                 if (steps === 0) return
                 if (steps > 0) {
                     for (let i = 0; i < steps; i++) {
-                        if (root.keyboardIndex > 0) {
-                            root.keyboardIndex--;
+                        if (clipboardDialog.keyboardIndex > 0) {
+                            clipboardDialog.keyboardIndex--;
                         } else {
-                            root.prevPage();
-                            root.keyboardIndex = Math.min(root.pageEntries.length - 1, root.itemsPerPage - 1);
+                            clipboardDialog.prevPage();
+                            clipboardDialog.keyboardIndex = Math.min(clipboardDialog.pageEntries.length - 1, clipboardDialog.itemsPerPage - 1);
                         }
                     }
                 } else {
                     for (let i = 0; i < -steps; i++) {
-                        if (root.keyboardIndex < root.pageEntries.length - 1) {
-                            root.keyboardIndex++;
+                        if (clipboardDialog.keyboardIndex < clipboardDialog.pageEntries.length - 1) {
+                            clipboardDialog.keyboardIndex++;
                         } else {
-                            root.nextPage();
-                            root.keyboardIndex = 0;
+                            clipboardDialog.nextPage();
+                            clipboardDialog.keyboardIndex = 0;
                         }
                     }
                 }
@@ -159,7 +162,7 @@ WindowDialog {
             buttonRadius: 14
             colBackgroundHover: Appearance.tiling.bgHover
             colRipple: Appearance.tiling.bgActive
-            onClicked: root.dismiss()
+            onClicked: clipboardDialog.dismiss()
             MaterialSymbol {
                 anchors.centerIn: parent
                 text: "close"
@@ -169,15 +172,15 @@ WindowDialog {
         }
 
         RippleButton {
-            visible: root.totalPages > 1
+            visible: clipboardDialog.totalPages > 1
             implicitHeight: 28
             implicitWidth: 28
             buttonRadius: 14
             colBackgroundHover: Appearance.tiling.bgHover
             colRipple: Appearance.tiling.bgActive
-            enabled: root.currentPage > 0
+            enabled: clipboardDialog.currentPage > 0
             opacity: enabled ? 1 : 0.3
-            onClicked: root.prevPage()
+            onClicked: clipboardDialog.prevPage()
             MaterialSymbol {
                 anchors.centerIn: parent
                 text: "chevron_left"
@@ -189,8 +192,8 @@ WindowDialog {
         Item { Layout.fillWidth: true }
 
         StyledText {
-            visible: root.totalPages > 1
-            text: `${root.currentPage + 1} / ${root.totalPages}`
+            visible: clipboardDialog.totalPages > 1
+            text: `${clipboardDialog.currentPage + 1} / ${clipboardDialog.totalPages}`
             color: Appearance.tiling.textDim
             font.pixelSize: Appearance.font.pixelSize.small
         }
@@ -198,15 +201,15 @@ WindowDialog {
         Item { Layout.fillWidth: true }
 
         RippleButton {
-            visible: root.totalPages > 1
+            visible: clipboardDialog.totalPages > 1
             implicitHeight: 28
             implicitWidth: 28
             buttonRadius: 14
             colBackgroundHover: Appearance.tiling.bgHover
             colRipple: Appearance.tiling.bgActive
-            enabled: root.currentPage < root.totalPages - 1
+            enabled: clipboardDialog.currentPage < clipboardDialog.totalPages - 1
             opacity: enabled ? 1 : 0.3
-            onClicked: root.nextPage()
+            onClicked: clipboardDialog.nextPage()
             MaterialSymbol {
                 anchors.centerIn: parent
                 text: "chevron_right"
@@ -223,7 +226,7 @@ WindowDialog {
             colRipple: Appearance.tiling.bgActive
             onClicked: {
                 Cliphist.wipe();
-                root.dismiss();
+                clipboardDialog.dismiss();
             }
             MaterialSymbol {
                 anchors.centerIn: parent

@@ -11,6 +11,7 @@ Item {
     id: root
     property alias currentIndex: tabBar.currentIndex
     required property var tabButtonList
+    property real wheelAccum: 0
 
     function incrementCurrentIndex() {
         tabBar.incrementCurrentIndex();
@@ -80,10 +81,11 @@ Item {
         acceptedButtons: Qt.NoButton
         cursorShape: Qt.PointingHandCursor
         onWheel: event => {
-            const steps = WheelUtils.getSteps(event.angleDelta.y)
-            for (let i = 0; i < Math.abs(steps); i++) {
-                if (steps < 0) root.incrementCurrentIndex();
-                else if (steps > 0) root.decrementCurrentIndex();
+            const r = WheelUtils.getSteps(event.angleDelta.y, root.wheelAccum)
+            root.wheelAccum = r.accum
+            for (let i = 0; i < Math.abs(r.steps); i++) {
+                if (r.steps < 0) root.incrementCurrentIndex();
+                else if (r.steps > 0) root.decrementCurrentIndex();
             }
         }
     }

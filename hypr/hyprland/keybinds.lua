@@ -281,10 +281,12 @@ for i = 1, 4 do
     hl.bind(keycombos[i], hl.dsp.focus({ workspace = prefix[i] .. "1" }))
 end
 --#/# bind = SUPER, Scroll ↑/↓,, -- Focus left/right
-for i = 1, 4 do
+hl.bind("SUPER + mouse_up", hl.dsp.global("quickshell:overviewNext"), { description = "Shell: Workspace switcher next (scroll)" })
+hl.bind("SUPER + mouse_down", hl.dsp.global("quickshell:overviewPrev"), { description = "Shell: Workspace switcher prev (scroll)" })
+for i = 1, 2 do
     local key = { "SUPER + mouse_up", "SUPER + mouse_down" }
-    local keycombos = { key[1], key[2], "CTRL + " .. key[1], "CTRL + " .. key[2] }
-    local prefix = { "+", "-", "r+", "r-" }
+    local keycombos = { "CTRL + " .. key[1], "CTRL + " .. key[2] }
+    local prefix = { "r+", "r-" }
     hl.bind(keycombos[i], hl.dsp.focus({ workspace = prefix[i] .. "1" }))
 end
 --## Special

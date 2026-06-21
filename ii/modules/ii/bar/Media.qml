@@ -12,6 +12,7 @@ import Quickshell.Hyprland
 Item {
     id: root
     property bool borderless: Config.options.bar.borderless
+    property real wheelAccum: 0
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
@@ -41,10 +42,11 @@ Item {
             }
         }
         onWheel: wheel => {
-            const steps = WheelUtils.getSteps(wheel.angleDelta.y)
-            for (let i = 0; i < Math.abs(steps); i++) {
-                if (steps > 0) Audio.incrementVolume();
-                else if (steps < 0) Audio.decrementVolume();
+            const r = WheelUtils.getSteps(wheel.angleDelta.y, root.wheelAccum)
+            root.wheelAccum = r.accum
+            for (let i = 0; i < Math.abs(r.steps); i++) {
+                if (r.steps > 0) Audio.incrementVolume();
+                else if (r.steps < 0) Audio.decrementVolume();
             }
             wheel.accepted = true;
         }
