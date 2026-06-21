@@ -5,27 +5,42 @@ import qs.services
 import QtQuick
 import Quickshell.Services.Notifications
 
-RippleButton {
+Item {
     id: button
     property string buttonText
     property string urgency
+    property bool hovered: hoverArea.containsMouse
+    property bool pressed: hoverArea.pressed
+    signal clicked()
 
-    implicitHeight: 28
-    leftPadding: 12
-    rightPadding: 12
-    buttonRadius: 0
-    rippleEnabled: false
+    implicitWidth: label.implicitWidth + 16
+    implicitHeight: 24
 
-    colBackground: ColorUtils.transparentize(Appearance.tiling.bg, 1)
-    colBackgroundHover: Appearance.tiling.bgHover
-    colRipple: Appearance.tiling.bgHover
+    Rectangle {
+        anchors.fill: parent
+        color: button.pressed ? (urgency == NotificationUrgency.Critical ? Appearance.tiling.error : Appearance.tiling.text) :
+               button.hovered ? (urgency == NotificationUrgency.Critical ? Appearance.tiling.borderCritical : Appearance.tiling.bgHover) :
+               "transparent"
+        Behavior on color { ColorAnimation { duration: 80 } }
+    }
 
-    borderWidth: 1
-    borderColor: (urgency == NotificationUrgency.Critical) ? Appearance.tiling.borderCritical : Appearance.tiling.border
-
-    contentItem: StyledText {
+    StyledText {
+        id: label
+        anchors.centerIn: parent
         horizontalAlignment: Text.AlignHCenter
-        text: buttonText
-        color: (urgency == NotificationUrgency.Critical) ? Appearance.tiling.error : Appearance.tiling.text
+        font.family: Appearance.font.family.monospace
+        font.pixelSize: Appearance.font.pixelSize.small
+        text: button.buttonText
+        color: button.pressed ? Appearance.tiling.bg :
+               (urgency == NotificationUrgency.Critical) ? Appearance.tiling.error : Appearance.tiling.text
+        Behavior on color { ColorAnimation { duration: 80 } }
+    }
+
+    MouseArea {
+        id: hoverArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: button.clicked()
     }
 }

@@ -18,9 +18,9 @@ Item { // Notification item area
     property real padding: onlyNotification ? 0 : 7
     property real summaryElideRatio: 0.85
 
-    property real dragConfirmThreshold: 70 // Drag further to discard notification
-    property real dismissOvershoot: notificationIcon.implicitWidth + 20 // Account for gaps and bouncy animations
-    property var qmlParent: root?.parent?.parent // There's something between this and the parent ListView
+    property real dragConfirmThreshold: 70
+    property real dismissOvershoot: 60
+    property var qmlParent: root?.parent?.parent
     property var parentDragIndex: qmlParent?.dragIndex ?? -1
     property var parentDragDistance: qmlParent?.dragDistance ?? 0
     property var dragIndexDiff: Math.abs(parentDragIndex - index)
@@ -33,7 +33,7 @@ Item { // Notification item area
 
     function destroyWithAnimation(left = false) {
         root.qmlParent.resetDrag()
-        background.anchors.leftMargin = background.anchors.leftMargin; // Break binding
+        background.anchors.leftMargin = background.anchors.leftMargin;
         destroyAnimation.left = left;
         destroyAnimation.running = true;
     }
@@ -41,10 +41,11 @@ Item { // Notification item area
     TextMetrics {
         id: summaryTextMetrics
         font.pixelSize: root.fontSize
+        font.family: Appearance.font.family.monospace
         text: root.notificationObject.summary || ""
     }
 
-    SequentialAnimation { // Drag finish animation
+    SequentialAnimation {
         id: destroyAnimation
         property bool left: true
         running: false
@@ -62,10 +63,9 @@ Item { // Notification item area
         }
     }
 
-    DragManager { // Drag manager
+    DragManager {
         id: dragManager
         anchors.fill: root
-        anchors.leftMargin: root.expanded ? -notificationIcon.implicitWidth : 0
         interactive: expanded
         automaticallyReset: false
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
@@ -92,21 +92,6 @@ Item { // Notification item area
             else 
                 dragManager.resetDrag();
         }
-    }
-
-    NotificationAppIcon { // App icon
-        id: notificationIcon
-        opacity: (!onlyNotification && notificationObject.image != "" && expanded) ? 1 : 0
-        visible: opacity > 0
-
-        Behavior on opacity {
-            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-        }
-
-        image: notificationObject.image
-        anchors.right: background.left
-        anchors.top: background.top
-        anchors.rightMargin: 10
     }
 
     Rectangle { // Background of notification item
@@ -138,7 +123,7 @@ Item { // Notification item area
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
         }
 
-        ColumnLayout { // Content column
+        ColumnLayout {
             id: contentColumn
             anchors.fill: parent
             anchors.margins: expanded ? root.padding : 0
@@ -158,6 +143,7 @@ Item { // Notification item area
                     Layout.fillWidth: summaryTextMetrics.width >= root.width * root.summaryElideRatio
                     visible: !root.onlyNotification
                     font.pixelSize: root.fontSize
+                    font.family: Appearance.font.family.monospace
                     color: Appearance.colors.colOnLayer3
                     elide: Text.ElideRight
                     text: root.notificationObject.summary || ""
@@ -170,9 +156,10 @@ Item { // Notification item area
                         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                     }
                     font.pixelSize: root.fontSize
+                    font.family: Appearance.font.family.monospace
                     color: Appearance.colors.colSubtext
                     elide: Text.ElideRight
-                    wrapMode: Text.Wrap // Needed for proper eliding????
+                    wrapMode: Text.Wrap
                     maximumLineCount: 1
                     textFormat: Text.StyledText
                     text: {
@@ -194,6 +181,7 @@ Item { // Notification item area
                     }
                     Layout.fillWidth: true
                     font.pixelSize: root.fontSize
+                    font.family: Appearance.font.family.monospace
                     color: Appearance.colors.colSubtext
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
@@ -230,7 +218,7 @@ Item { // Notification item area
                         vertical: false
                     }
 
-                    StyledFlickable { // Notification actions
+                    StyledFlickable {
                         id: actionsFlickable
                         anchors.fill: parent
                         implicitHeight: actionRowLayout.implicitHeight
@@ -252,21 +240,13 @@ Item { // Notification item area
 
                             NotificationActionButton {
                                 Layout.fillWidth: true
-                                buttonText: Translation.tr("Close")
+                                buttonText: "× Close"
                                 urgency: notificationObject.urgency
                                 implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : 
-                                    (contentItem.implicitWidth + leftPadding + rightPadding)
+                                    (implicitWidth)
 
                                 onClicked: {
                                     root.destroyWithAnimation()
-                                }
-
-                                contentItem: MaterialSymbol {
-                                    iconSize: Appearance.font.pixelSize.larger
-                                    horizontalAlignment: Text.AlignHCenter
-                                    color: (notificationObject.urgency == NotificationUrgency.Critical) ? 
-                                        Appearance.m3colors.m3onSurfaceVariant : Appearance.m3colors.m3onSurface
-                                    text: "close"
                                 }
                             }
 
@@ -286,14 +266,16 @@ Item { // Notification item area
                             }
 
                             NotificationActionButton {
+                                id: copyButton
                                 Layout.fillWidth: true
                                 urgency: notificationObject.urgency
+                                buttonText: "⎘ Copy"
                                 implicitWidth: (notificationObject.actions.length == 0) ? ((actionsFlickable.width - actionRowLayout.spacing) / 2) : 
-                                    (contentItem.implicitWidth + leftPadding + rightPadding)
+                                    (implicitWidth)
 
                                 onClicked: {
                                     Quickshell.clipboardText = notificationObject.body
-                                    copyIcon.text = "inventory"
+                                    copyButton.buttonText = "✓ Copied"
                                     copyIconTimer.restart()
                                 }
 
@@ -302,17 +284,8 @@ Item { // Notification item area
                                     interval: 1500
                                     repeat: false
                                     onTriggered: {
-                                        copyIcon.text = "content_copy"
+                                        copyButton.buttonText = "⎘ Copy"
                                     }
-                                }
-
-                                contentItem: MaterialSymbol {
-                                    id: copyIcon
-                                    iconSize: Appearance.font.pixelSize.larger
-                                    horizontalAlignment: Text.AlignHCenter
-                                    color: (notificationObject.urgency == NotificationUrgency.Critical) ? 
-                                        Appearance.m3colors.m3onSurfaceVariant : Appearance.m3colors.m3onSurface
-                                    text: "content_copy"
                                 }
                             }
                             
