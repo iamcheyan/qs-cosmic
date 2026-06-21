@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import QtQuick.Layouts
 import qs.services
 import qs.modules.common
@@ -9,12 +8,6 @@ import qs.modules.common.widgets
 
 ContentPage {
     forceWidth: true
-
-    Process {
-        id: translationProc
-        property string locale: ""
-        command: [Directories.aiTranslationScriptPath, translationProc.locale]
-    }
 
     ContentSection {
         icon: "volume_up"
@@ -164,31 +157,6 @@ ContentPage {
                 }
             }
         }
-        ContentSubsection {
-            title: Translation.tr("Generate translation with Gemini")
-            tooltip: Translation.tr("You'll need to enter your Gemini API key first.\nType /key on the sidebar for instructions.")
-
-            ConfigRow {
-                MaterialTextArea {
-                    id: localeInput
-                    Layout.fillWidth: true
-                    placeholderText: Translation.tr("Locale code, e.g. fr_FR, de_DE, zh_CN...")
-                    text: Config.options.language.ui === "auto" ? Qt.locale().name : Config.options.language.ui
-                }
-                RippleButtonWithIcon {
-                    id: generateTranslationBtn
-                    Layout.fillHeight: true
-                    nerdIcon: ""
-                    enabled: !translationProc.running || (translationProc.locale !== localeInput.text.trim())
-                    mainText: enabled ? Translation.tr("Generate\nTypically takes 2 minutes") : Translation.tr("Generating...\nDon't close this window!")
-                    onClicked: {
-                        translationProc.locale = localeInput.text.trim();
-                        translationProc.running = false;
-                        translationProc.running = true;
-                    }
-                }
-            }
-        }
     }
 
     ContentSection {
@@ -308,14 +276,6 @@ ContentPage {
         icon: "work_alert"
         title: Translation.tr("Work safety")
 
-        ConfigSwitch {
-            buttonIcon: "assignment"
-            text: Translation.tr("Hide clipboard images copied from sussy sources")
-            checked: Config.options.workSafety.enable.clipboard
-            onCheckedChanged: {
-                Config.options.workSafety.enable.clipboard = checked;
-            }
-        }
         ConfigSwitch {
             buttonIcon: "wallpaper"
             text: Translation.tr("Hide sussy/anime wallpapers")

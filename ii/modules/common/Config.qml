@@ -299,11 +299,6 @@ Singleton {
 
             property JsonObject language: JsonObject {
                 property string ui: "auto" // UI language. "auto" for system locale, or specific language code like "zh_CN", "en_US"
-                property JsonObject translator: JsonObject {
-                    property string engine: "auto" // Run `trans -list-engines` for available engines. auto should use google
-                    property string targetLanguage: "auto" // Run `trans -list-all` for available languages
-                    property string sourceLanguage: "auto"
-                }
             }
 
             property JsonObject launcher: JsonObject {
@@ -429,10 +424,6 @@ Singleton {
 
             property JsonObject sidebar: JsonObject {
                 property bool keepRightSidebarLoaded: false
-                property JsonObject translator: JsonObject {
-                    property bool enable: false
-                    property int delay: 300 // Delay before sending request. Reduces (potential) rate limits and lag.
-                }
                 property JsonObject cornerOpen: JsonObject {
                     property bool enable: true
                     property bool bottom: false
@@ -483,10 +474,6 @@ Singleton {
                 property int stronglyAdviseUpdateThreshold: 200 // packages
             }
             
-            property JsonObject wallpaperSelector: JsonObject {
-                property bool useSystemFileDialog: false
-            }
-            
             property JsonObject windows: JsonObject {
                 property bool showTitlebar: true // Client-side decoration for shell apps
                 property bool centerTitle: true
@@ -499,7 +486,6 @@ Singleton {
             property JsonObject workSafety: JsonObject {
                 property JsonObject enable: JsonObject {
                     property bool wallpaper: false
-                    property bool clipboard: false
                 }
                 property JsonObject triggerCondition: JsonObject {
                     property list<string> networkNameKeywords: ["airport", "cafe", "college", "company", "eduroam", "free", "guest", "public", "school", "university"]
