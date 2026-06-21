@@ -292,7 +292,7 @@ PanelWindow {
         width: Math.min(parent.width * 0.72, 960)
         height: Math.min(parent.height * 0.80, 720)
         color: Appearance.tiling.bg
-        radius: 6
+        radius: Appearance.tiling.dialogRadius
         border.color: Appearance.tiling.border
         border.width: Appearance.tiling.borderWidth
         clip: true
@@ -334,8 +334,8 @@ PanelWindow {
                     anchors.rightMargin: 6
                     spacing: 6
 
-                    MaterialSymbol {
-                        text: "apps"
+                    CosmicIcon {
+                        name: "actions/application-menu-symbolic"
                         iconSize: Appearance.font.pixelSize.small
                         color: Appearance.tiling.textBright
                     }
@@ -384,8 +384,8 @@ PanelWindow {
                     anchors.rightMargin: 8
                     spacing: 6
 
-                    MaterialSymbol {
-                        text: "search"
+                    CosmicIcon {
+                        name: "actions/system-search-symbolic"
                         iconSize: Appearance.font.pixelSize.small
                         color: Appearance.tiling.textDim
                     }
@@ -469,7 +469,7 @@ PanelWindow {
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: 2
-                            radius: 6
+                            radius: Appearance.tiling.dialogRadius
                             color: ma.containsMouse ? Appearance.tiling.bgHover : "transparent"
                             border.width: ma.containsMouse ? Appearance.tiling.borderWidth : 0
                             border.color: ma.containsMouse ? Appearance.tiling.border : "transparent"
@@ -490,10 +490,9 @@ PanelWindow {
                             border.width: Appearance.tiling.borderWidth
                             z: 2
 
-                            MaterialSymbol {
+                            CosmicIcon {
                                 anchors.centerIn: parent
-                                fill: appItem.isPinned ? 1 : 0
-                                text: "keep"
+                                name: "actions/pin-symbolic"
                                 iconSize: 11
                                 color: appItem.isPinned ? Appearance.tiling.textBright : Appearance.tiling.textDim
                             }

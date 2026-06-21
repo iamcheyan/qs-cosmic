@@ -54,11 +54,9 @@ Item {
                     }
                 }
 
-                MaterialSymbol {
+                CosmicIcon {
                     anchors.centerIn: screenshotButton
-                    horizontalAlignment: Qt.AlignHCenter
-                    fill: 1
-                    text: "screenshot_region"
+                    name: "actions/view-fullscreen-symbolic"
                     iconSize: Appearance.font.pixelSize.larger
                     color: Appearance.colors.colOnLayer2
                 }
@@ -104,11 +102,9 @@ Item {
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        horizontalAlignment: Qt.AlignHCenter
-                        fill: 1
-                        text: "colorize"
+                        name: "actions/pencil-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer2
                     }
@@ -130,11 +126,9 @@ Item {
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        horizontalAlignment: Qt.AlignHCenter
-                        fill: 0
-                        text: Pipewire.defaultAudioSource?.audio?.muted ? "mic_off" : "mic"
+                        name: Pipewire.defaultAudioSource?.audio?.muted ? "status/microphone-sensitivity-muted-symbolic" : "status/microphone-sensitivity-high-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer2
                     }
@@ -162,11 +156,9 @@ Item {
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        horizontalAlignment: Qt.AlignHCenter
-                        fill: 0
-                        text: Appearance.m3colors.darkmode ? "light_mode" : "dark_mode"
+                        name: Appearance.m3colors.darkmode ? "status/display-brightness-high-symbolic" : "status/display-brightness-low-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer2
                     }
@@ -201,14 +193,13 @@ Item {
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        horizontalAlignment: Qt.AlignHCenter
-                        fill: 0
-                        text: switch(PowerProfiles.profile) {
-                            case PowerProfile.PowerSaver: return "energy_savings_leaf"
-                            case PowerProfile.Balanced: return "airwave"
-                            case PowerProfile.Performance: return "local_fire_department"
+                        name: switch(PowerProfiles.profile) {
+                            case PowerProfile.PowerSaver: return "status/display-brightness-medium-symbolic"
+                            case PowerProfile.Balanced: return "status/display-brightness-medium-symbolic"
+                            case PowerProfile.Performance: return "status/software-update-urgent-symbolic"
+                            default: return "status/display-brightness-medium-symbolic"
                         }
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer2

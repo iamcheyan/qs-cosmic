@@ -409,5 +409,6 @@ Singleton {
         property color success: "#a3be8c"
         property int borderWidth: 1
         property int titlebarHeight: 26
+        property int dialogRadius: 6
     }
 }

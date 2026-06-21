@@ -6,6 +6,7 @@ import QtQuick
 RippleButton {
     id: root
     property bool active: false
+    property bool selected: false
 
     horizontalPadding: 10
     verticalPadding: 8
@@ -19,7 +20,7 @@ RippleButton {
     }
 
     rippleEnabled: false
-    colBackground: ColorUtils.transparentize(Appearance.tiling.bg, 1)
+    colBackground: root.selected ? Appearance.colors.colSecondaryContainer : ColorUtils.transparentize(Appearance.tiling.bg, 1)
     colBackgroundHover: active ? colBackground : Appearance.tiling.bgHover
     colRipple: Appearance.tiling.bgHover
     buttonRadius: 0

@@ -189,16 +189,9 @@ WindowDialog {
         }
     }
     
-    WindowDialogButtonRow {
-        Layout.fillWidth: true
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        DialogButton {
-            buttonText: Translation.tr("Done")
-            onClicked: root.dismiss()
-        }
+    WindowDialogToolbar {
+        trailingActions: [
+            { type: "text", text: Translation.tr("Done"), callback: () => root.dismiss() }
+        ]
     }
 }

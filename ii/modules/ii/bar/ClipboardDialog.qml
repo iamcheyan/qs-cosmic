@@ -35,6 +35,11 @@ WindowDialog {
     Connections {
         target: Cliphist
         function onEntriesChanged() {
+            const newTotalPages = Math.max(1, Math.ceil(Cliphist.entries.length / itemsPerPage));
+            if (currentPage >= newTotalPages) {
+                currentPage = newTotalPages - 1;
+                keyboardIndex = 0;
+            }
             pageEntries = Cliphist.entries.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage);
         }
     }
@@ -106,7 +111,7 @@ WindowDialog {
             required property int index
             entry: modelData
             width: ListView.view.width
-            keySelected: clipboardDialog.keyboardIndex === index
+            selected: clipboardDialog.keyboardIndex === index
             onItemClicked: clipboardDialog.dismiss()
             onHoveredChanged: {
                 if (hovered) {
@@ -149,91 +154,17 @@ WindowDialog {
 
     WindowDialogSeparator {}
 
-    RowLayout {
-        Layout.leftMargin: 8
-        Layout.rightMargin: 8
-        Layout.topMargin: 4
-        Layout.bottomMargin: 4
-        spacing: 6
-
-        RippleButton {
-            implicitHeight: 28
-            implicitWidth: 28
-            buttonRadius: 14
-            colBackgroundHover: Appearance.tiling.bgHover
-            colRipple: Appearance.tiling.bgActive
-            onClicked: clipboardDialog.dismiss()
-            MaterialSymbol {
-                anchors.centerIn: parent
-                text: "close"
-                font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.tiling.text
-            }
-        }
-
-        RippleButton {
-            visible: clipboardDialog.totalPages > 1
-            implicitHeight: 28
-            implicitWidth: 28
-            buttonRadius: 14
-            colBackgroundHover: Appearance.tiling.bgHover
-            colRipple: Appearance.tiling.bgActive
-            enabled: clipboardDialog.currentPage > 0
-            opacity: enabled ? 1 : 0.3
-            onClicked: clipboardDialog.prevPage()
-            MaterialSymbol {
-                anchors.centerIn: parent
-                text: "chevron_left"
-                font.pixelSize: Appearance.font.pixelSize.larger
-                color: Appearance.tiling.text
-            }
-        }
-
-        Item { Layout.fillWidth: true }
-
-        StyledText {
-            visible: clipboardDialog.totalPages > 1
-            text: `${clipboardDialog.currentPage + 1} / ${clipboardDialog.totalPages}`
-            color: Appearance.tiling.textDim
-            font.pixelSize: Appearance.font.pixelSize.small
-        }
-
-        Item { Layout.fillWidth: true }
-
-        RippleButton {
-            visible: clipboardDialog.totalPages > 1
-            implicitHeight: 28
-            implicitWidth: 28
-            buttonRadius: 14
-            colBackgroundHover: Appearance.tiling.bgHover
-            colRipple: Appearance.tiling.bgActive
-            enabled: clipboardDialog.currentPage < clipboardDialog.totalPages - 1
-            opacity: enabled ? 1 : 0.3
-            onClicked: clipboardDialog.nextPage()
-            MaterialSymbol {
-                anchors.centerIn: parent
-                text: "chevron_right"
-                font.pixelSize: Appearance.font.pixelSize.larger
-                color: Appearance.tiling.text
-            }
-        }
-
-        RippleButton {
-            implicitHeight: 28
-            implicitWidth: 28
-            buttonRadius: 14
-            colBackgroundHover: Appearance.tiling.bgHover
-            colRipple: Appearance.tiling.bgActive
-            onClicked: {
-                Cliphist.wipe();
-                clipboardDialog.dismiss();
-            }
-            MaterialSymbol {
-                anchors.centerIn: parent
-                text: "delete_sweep"
-                font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.tiling.error
-            }
-        }
+    WindowDialogToolbar {
+        paginationVisible: clipboardDialog.totalPages > 1
+        currentPage: clipboardDialog.currentPage
+        totalPages: clipboardDialog.totalPages
+        onPageUp: clipboardDialog.prevPage()
+        onPageDown: clipboardDialog.nextPage()
+        leadingActions: [
+            { type: "icon", icon: "close", callback: () => clipboardDialog.dismiss() }
+        ]
+        trailingActions: [
+            { type: "icon", icon: "delete_sweep", color: Appearance.tiling.error, callback: () => { Cliphist.wipe(); clipboardDialog.dismiss(); } }
+        ]
     }
 }

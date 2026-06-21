@@ -63,10 +63,10 @@ PopupWindow {
                 margins: root.padding
             }
 
-            color: Appearance.colors.colLayer0
-            radius: Appearance.rounding.windowRounding
-            border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            color: Appearance.tiling.bg
+            radius: Appearance.tiling.dialogRadius
+            border.width: Appearance.tiling.borderWidth
+            border.color: Appearance.tiling.border
             clip: true
 
             opacity: 0
@@ -116,9 +116,10 @@ PopupWindow {
                         }
                         spacing: 8
 
-                        MaterialSymbol {
-                            iconSize: 18
-                            text: "screenshot_region"
+                        CosmicIcon {
+                            iconSize: 16
+                            name: "actions/view-fullscreen-symbolic"
+                            color: Appearance.colors.colOnLayer0
                         }
 
                         StyledText {
@@ -152,9 +153,10 @@ PopupWindow {
                         }
                         spacing: 8
 
-                        MaterialSymbol {
-                            iconSize: 18
-                            text: "fullscreen"
+                        CosmicIcon {
+                            iconSize: 16
+                            name: "actions/view-fullscreen-symbolic"
+                            color: Appearance.colors.colOnLayer0
                         }
 
                         StyledText {
@@ -168,7 +170,7 @@ PopupWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     implicitHeight: 1
-                    color: Appearance.colors.colSubtext
+                    color: Appearance.tiling.border
                     Layout.topMargin: 4
                     Layout.bottomMargin: 4
                 }
@@ -197,9 +199,10 @@ PopupWindow {
                         }
                         spacing: 8
 
-                        MaterialSymbol {
-                            iconSize: 18
-                            text: "colorize"
+                        CosmicIcon {
+                            iconSize: 16
+                            name: "actions/pencil-symbolic"
+                            color: Appearance.colors.colOnLayer0
                         }
 
                         StyledText {
@@ -233,9 +236,10 @@ PopupWindow {
                         }
                         spacing: 8
 
-                        MaterialSymbol {
-                            iconSize: 18
-                            text: "videocam"
+                        CosmicIcon {
+                            iconSize: 16
+                            name: "devices/camera-video-symbolic"
+                            color: Appearance.colors.colOnLayer0
                         }
 
                         StyledText {

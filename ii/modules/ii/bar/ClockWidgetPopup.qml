@@ -38,12 +38,12 @@ StyledPopup {
         spacing: 4
 
         StyledPopupHeaderRow {
-            icon: "calendar_month"
+            icon: "actions/appointment-new-symbolic"
             label: root.formattedDate
         }
 
         StyledPopupValueRow {
-            icon: "timelapse"
+            icon: "actions/view-refresh-symbolic"
             label: Translation.tr("System uptime:")
             value: root.formattedUptime
         }
@@ -54,7 +54,7 @@ StyledPopup {
             Layout.fillWidth: true
 
             StyledPopupValueRow {
-                icon: "checklist"
+                icon: "actions/object-select-symbolic"
                 label: Translation.tr("To Do:")
                 value: ""
             }

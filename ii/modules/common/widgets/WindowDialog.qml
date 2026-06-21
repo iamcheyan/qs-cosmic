@@ -45,7 +45,7 @@ Rectangle {
         anchors.horizontalCenter: root.anchorPosition === 0 ? parent.horizontalCenter : undefined
         anchors.right: root.anchorPosition === 1 ? parent.right : undefined
         anchors.rightMargin: root.anchorPosition === 1 ? root.anchorMargin : 0
-        radius: 6
+        radius: Appearance.tiling.dialogRadius
         color: Appearance.tiling.bg
         border.width: Appearance.tiling.borderWidth
         border.color: Appearance.tiling.border

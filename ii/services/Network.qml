@@ -53,6 +53,25 @@ Singleton {
                         ? "signal_wifi_off"
                         : "signal_wifi_bad"
 
+    property string cosmicIcon: root.ethernet
+        ? "devices/network-wired-symbolic"
+        : (root.wifiEnabled && root.wifiStatus === "connected")
+            ? (
+                (root.active?.strength ?? 0) > 83 ? "status/network-wireless-signal-excellent-symbolic" :
+                (root.active?.strength ?? 0) > 67 ? "status/network-wireless-signal-good-symbolic" :
+                (root.active?.strength ?? 0) > 50 ? "status/network-wireless-signal-ok-symbolic" :
+                (root.active?.strength ?? 0) > 33 ? "status/network-wireless-signal-ok-symbolic" :
+                (root.active?.strength ?? 0) > 17 ? "status/network-wireless-signal-weak-symbolic" :
+                "status/network-wireless-signal-none-symbolic"
+            )
+            : (root.wifiStatus === "connecting")
+                ? "status/network-wireless-acquiring-symbolic"
+                : (root.wifiStatus === "disconnected")
+                    ? "status/network-wireless-disconnected-symbolic"
+                    : (root.wifiStatus === "disabled")
+                        ? "status/network-wireless-disconnected-symbolic"
+                        : "status/network-wireless-disconnected-symbolic"
+
     // Control
     function enableWifi(enabled = true): void {
         const cmd = enabled ? "on" : "off";

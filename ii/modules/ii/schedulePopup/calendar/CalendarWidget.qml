@@ -62,10 +62,9 @@ Item {
                 downAction: () => {
                     monthShift--;
                 }
-                contentItem: MaterialSymbol {
-                    text: "chevron_left"
+                contentItem: CosmicIcon {
+                    name: "actions/go-previous-symbolic"
                     iconSize: Appearance.font.pixelSize.larger
-                    horizontalAlignment: Text.AlignHCenter
                     color: Appearance.colors.colOnLayer1
                 }
             }
@@ -74,10 +73,9 @@ Item {
                 downAction: () => {
                     monthShift++;
                 }
-                contentItem: MaterialSymbol {
-                    text: "chevron_right"
+                contentItem: CosmicIcon {
+                    name: "actions/go-next-symbolic"
                     iconSize: Appearance.font.pixelSize.larger
-                    horizontalAlignment: Text.AlignHCenter
                     color: Appearance.colors.colOnLayer1
                 }
             }

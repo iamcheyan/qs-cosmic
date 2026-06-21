@@ -27,26 +27,25 @@ DialogListItem {
         spacing: 0
 
         RowLayout {
-            // Name
             spacing: 10
-            MaterialSymbol {
+            CosmicIcon {
                 iconSize: Appearance.font.pixelSize.larger
                 property int strength: root.wifiNetwork?.strength ?? 0
-                text: strength > 80 ? "signal_wifi_4_bar" : strength > 60 ? "network_wifi_3_bar" : strength > 40 ? "network_wifi_2_bar" : strength > 20 ? "network_wifi_1_bar" : "signal_wifi_0_bar"
-                color: Appearance.colors.colOnSurfaceVariant
+                name: strength > 80 ? "status/network-wireless-signal-excellent-symbolic" : strength > 60 ? "status/network-wireless-signal-good-symbolic" : strength > 40 ? "status/network-wireless-signal-ok-symbolic" : strength > 20 ? "status/network-wireless-signal-weak-symbolic" : "status/network-wireless-signal-none-symbolic"
+                color: Appearance.tiling.textDim
             }
             StyledText {
                 Layout.fillWidth: true
-                color: Appearance.colors.colOnSurfaceVariant
+                color: Appearance.tiling.text
                 elide: Text.ElideRight
                 text: root.wifiNetwork?.ssid ?? Translation.tr("Unknown")
                 textFormat: Text.PlainText
             }
-            MaterialSymbol {
+            CosmicIcon {
                 visible: (root.wifiNetwork?.isSecure || root.wifiNetwork?.active) ?? false
-                text: root.wifiNetwork?.active ? "check" : Network.wifiConnectTarget === root.wifiNetwork ? "settings_ethernet" : "lock"
+                name: root.wifiNetwork?.active ? "actions/object-select-symbolic" : Network.wifiConnectTarget === root.wifiNetwork ? "status/network-wireless-acquiring-symbolic" : "status/network-wireless-encrypted-symbolic"
                 iconSize: Appearance.font.pixelSize.larger
-                color: Appearance.colors.colOnSurfaceVariant
+                color: Appearance.tiling.textDim
             }
         }
 
@@ -101,9 +100,9 @@ DialogListItem {
                 DialogButton {
                     Layout.fillWidth: true
                     buttonText: Translation.tr("Open network portal")
-                    colBackground: Appearance.colors.colLayer4
-                    colBackgroundHover: Appearance.colors.colLayer4Hover
-                    colRipple: Appearance.colors.colLayer4Active
+                    colBackground: Appearance.tiling.bgActive
+                    colBackgroundHover: Appearance.tiling.bgHover
+                    colRipple: Appearance.tiling.bgActive
                     onClicked: {
                         Network.openPublicWifiPortal()
                         GlobalStates.sidebarRightOpen = false

@@ -56,22 +56,15 @@ WindowDialog {
         }
     }
     WindowDialogSeparator {}
-    WindowDialogButtonRow {
-        DialogButton {
-            buttonText: Translation.tr("Details")
-            onClicked: {
+    WindowDialogToolbar {
+        leadingActions: [
+            { type: "text", text: Translation.tr("Details"), callback: () => {
                 Quickshell.execDetached(["bash", "-c", `${Config.options.apps.bluetooth}`]);
                 GlobalStates.sidebarRightOpen = false;
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        DialogButton {
-            buttonText: Translation.tr("Done")
-            onClicked: root.dismiss()
-        }
+            }}
+        ]
+        trailingActions: [
+            { type: "text", text: Translation.tr("Done"), callback: () => root.dismiss() }
+        ]
     }
 }

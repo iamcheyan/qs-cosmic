@@ -72,10 +72,9 @@ Item {
                 width: mediaCircProg.implicitSize
                 height: mediaCircProg.implicitSize
                 
-                MaterialSymbol {
+                CosmicIcon {
                     anchors.centerIn: parent
-                    fill: 1
-                    text: activePlayer?.isPlaying ? "pause" : "music_note"
+                    name: activePlayer?.isPlaying ? "actions/media-playback-pause-symbolic" : "actions/media-playback-start-symbolic"
                     iconSize: Appearance.font.pixelSize.normal
                     color: Appearance.m3colors.m3onSecondaryContainer
                 }

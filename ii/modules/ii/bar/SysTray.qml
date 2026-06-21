@@ -86,11 +86,10 @@ Item {
 
             onClicked: root.trayOverflowOpen = !root.trayOverflowOpen
 
-            MaterialSymbol {
+            CosmicIcon {
                 anchors.centerIn: parent
+                name: "actions/pan-down-symbolic"
                 iconSize: Appearance.font.pixelSize.larger
-                text: "expand_more"
-                horizontalAlignment: Text.AlignHCenter
                 color: Appearance.colors.colOnLayer2
                 opacity: root.trayOverflowOpen || trayOverflowButton.containsMouse ? 1 : 0.75
                 rotation: (root.trayOverflowOpen ? 180 : 0) - (90 * root.vertical) + (180 * root.invertSide)
@@ -148,11 +147,12 @@ Item {
             }
         }
 
-        StyledText {
+        Rectangle {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-            font.pixelSize: Appearance.font.pixelSize.larger
+            implicitWidth: 1
+            implicitHeight: 12
             color: Appearance.colors.colSubtext
-            text: "•"
+            opacity: 0.4
             visible: root.showSeparator && SystemTray.items.values.length > 0
         }
     }

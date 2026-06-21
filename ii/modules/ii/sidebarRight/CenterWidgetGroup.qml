@@ -10,9 +10,9 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     radius: 0
-    color: "#181818"
-    border.width: 1
-    border.color: "#2f2f2f"
+    color: Appearance.tiling.bg
+    border.width: Appearance.tiling.borderWidth
+    border.color: Appearance.tiling.border
 
     NotificationList {
         anchors.fill: parent

@@ -19,8 +19,8 @@ MouseArea {
 
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    implicitWidth: 20
-    implicitHeight: 20
+    implicitWidth: 18
+    implicitHeight: 18
     onPressed: (event) => {
         switch (event.button) {
         case Qt.LeftButton:
@@ -73,8 +73,8 @@ MouseArea {
         visible: !Config.options.tray.monochromeIcons
         source: root.item.icon
         anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
+        width: 15
+        height: 15
     }
 
     Loader {
@@ -83,10 +83,10 @@ MouseArea {
         sourceComponent: Item {
             Desaturate {
                 id: desaturatedIcon
-                visible: false // There's already color overlay
+                visible: false
                 anchors.fill: parent
                 source: trayIcon
-                desaturation: 0.8 // 1.0 means fully grayscale
+                desaturation: 0.8
             }
             ColorOverlay {
                 anchors.fill: desaturatedIcon

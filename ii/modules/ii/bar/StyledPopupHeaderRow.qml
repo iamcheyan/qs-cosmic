@@ -17,11 +17,9 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 6
 
-        MaterialSymbol {
+        CosmicIcon {
             anchors.verticalCenter: parent.verticalCenter
-            fill: 0
-            font.weight: Font.Bold
-            text: root.icon
+            name: root.icon
             iconSize: Appearance.font.pixelSize.small
             color: Appearance.tiling.textBright
         }

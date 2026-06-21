@@ -72,10 +72,10 @@ PopupWindow {
                 margins: root.padding
             }
 
-            color: Appearance.colors.colLayer0
-            radius: Appearance.rounding.windowRounding
-            border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            color: Appearance.tiling.bg
+            radius: Appearance.tiling.dialogRadius
+            border.width: Appearance.tiling.borderWidth
+            border.color: Appearance.tiling.border
             clip: true
 
             opacity: 0
@@ -165,9 +165,10 @@ PopupWindow {
                         rightMargin: backButton.horizontalPadding
                     }
                     spacing: 8
-                    MaterialSymbol {
-                        iconSize: 20
-                        text: "chevron_left"
+                    CosmicIcon {
+                        iconSize: 16
+                        name: "actions/go-previous-symbolic"
+                        color: Appearance.colors.colOnLayer0
                     }
                     StyledText {
                         Layout.fillWidth: true
@@ -199,9 +200,10 @@ PopupWindow {
                 }
                 spacing: 8
 
-                MaterialSymbol {
-                    iconSize: 18
-                    text: "push_pin"
+                CosmicIcon {
+                    iconSize: 14
+                    name: "actions/pin-symbolic"
+                    color: Appearance.colors.colOnLayer0
                 }
 
                 StyledText {
@@ -214,7 +216,7 @@ PopupWindow {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 1
-            color: Appearance.colors.colSubtext
+            color: Appearance.tiling.border
             Layout.topMargin: 4
             Layout.bottomMargin: 4
         }

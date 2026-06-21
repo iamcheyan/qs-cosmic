@@ -192,8 +192,8 @@ Item { // Bar content region
                         Behavior on Layout.rightMargin {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                         }
-                        MaterialSymbol {
-                            text: "volume_off"
+                        CosmicIcon {
+                            name: "status/audio-volume-muted-symbolic"
                             iconSize: Appearance.font.pixelSize.larger
                             color: rightSidebarButton.colText
                         }
@@ -205,8 +205,8 @@ Item { // Bar content region
                         Behavior on Layout.rightMargin {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                         }
-                        MaterialSymbol {
-                            text: "mic_off"
+                        CosmicIcon {
+                            name: "status/microphone-sensitivity-muted-symbolic"
                             iconSize: Appearance.font.pixelSize.larger
                             color: rightSidebarButton.colText
                         }
@@ -229,8 +229,8 @@ Item { // Bar content region
                             id: notificationUnreadCount
                         }
                     }
-                    MaterialSymbol {
-                        text: "power_settings_new"
+                    CosmicIcon {
+                        name: "actions/system-shutdown-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: rightSidebarButton.colText
                     }
@@ -249,10 +249,9 @@ Item { // Bar content region
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        fill: 1
-                        text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
+                        name: BluetoothStatus.connected ? "status/bluetooth-active-symbolic" : BluetoothStatus.enabled ? "devices/bluetooth-symbolic" : "status/bluetooth-disabled-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer0
                     }
@@ -275,10 +274,9 @@ Item { // Bar content region
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        fill: 1
-                        text: Network.materialSymbol
+                        name: Network.cosmicIcon
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer0
                     }
@@ -301,10 +299,9 @@ Item { // Bar content region
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        fill: 1
-                        text: "content_paste"
+                        name: "actions/edit-paste-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer0
                     }
@@ -332,10 +329,9 @@ Item { // Bar content region
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        fill: 1
-                        text: Hyprsunset.temperatureActive ? "bedtime" : "bedtime_off"
+                        name: Hyprsunset.temperatureActive ? "status/weather-clear-night-symbolic" : "status/display-brightness-off-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Hyprsunset.temperatureActive ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
                     }
@@ -355,10 +351,9 @@ Item { // Bar content region
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        fill: 1
-                        text: "free_cancellation"
+                        name: "actions/process-stop-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Idle.inhibit ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
                     }
@@ -381,10 +376,9 @@ Item { // Bar content region
                     implicitWidth: 20
                     implicitHeight: 20
                     property bool hovered: parent.hovered
-                    MaterialSymbol {
+                    CosmicIcon {
                         anchors.centerIn: parent
-                        fill: 1
-                        text: Audio.sink?.audio?.muted ? "volume_off" : "volume_up"
+                        name: Audio.sink?.audio?.muted ? "status/audio-volume-muted-symbolic" : "status/audio-volume-high-symbolic"
                         iconSize: Appearance.font.pixelSize.larger
                         color: Appearance.colors.colOnLayer0
                     }

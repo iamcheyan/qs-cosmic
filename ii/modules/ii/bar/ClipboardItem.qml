@@ -11,11 +11,10 @@ import Quickshell
 DialogListItem {
     id: root
     required property string entry
-    property bool keySelected: false
     signal itemClicked()
 
     verticalPadding: 4
-    active: keySelected
+    active: selected
 
     onClicked: {
         Cliphist.copy(entry);
@@ -45,21 +44,14 @@ DialogListItem {
         }
         implicitHeight: rowLayout.implicitHeight
 
-        Rectangle {
-            anchors.fill: parent
-            anchors.leftMargin: -root.horizontalPadding
-            anchors.rightMargin: -root.horizontalPadding
-            color: root.keySelected ? Appearance.colors.colSecondaryContainer : (root.hovered ? Appearance.tiling.bgHover : "transparent")
-        }
-
         RowLayout {
             id: rowLayout
             anchors.fill: parent
             spacing: 10
 
-            MaterialSymbol {
+            CosmicIcon {
                 iconSize: Appearance.font.pixelSize.larger
-                text: root.isImage ? "image" : "description"
+                name: root.isImage ? "actions/insert-image-symbolic" : "actions/document-open-symbolic"
                 color: Appearance.tiling.textDim
             }
 
@@ -132,8 +124,8 @@ DialogListItem {
         }
     }
 
-    onKeySelectedChanged: {
-        if (isImage && !keySelected) {
+    onSelectedChanged: {
+        if (isImage && !selected) {
             thumbPopup.visible = false;
         }
     }

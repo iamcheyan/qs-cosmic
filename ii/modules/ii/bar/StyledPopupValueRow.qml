@@ -10,8 +10,8 @@ RowLayout {
     required property string value
     spacing: 6
 
-    MaterialSymbol {
-        text: root.icon
+    CosmicIcon {
+        name: root.icon
         color: Appearance.tiling.accent
         iconSize: Appearance.font.pixelSize.small
     }

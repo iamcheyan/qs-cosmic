@@ -33,6 +33,22 @@ Singleton {
         return "bluetooth";
     }
 
+    function getBluetoothDeviceCosmicIcon(systemIconName: string): string {
+        if (systemIconName.includes("headset"))
+            return "devices/audio-headset-symbolic";
+        if (systemIconName.includes("headphones"))
+            return "devices/audio-headphones-symbolic";
+        if (systemIconName.includes("audio"))
+            return "devices/audio-speakers-symbolic";
+        if (systemIconName.includes("phone"))
+            return "devices/smartphone-symbolic";
+        if (systemIconName.includes("mouse"))
+            return "devices/input-mouse-symbolic";
+        if (systemIconName.includes("keyboard"))
+            return "devices/input-keyboard-symbolic";
+        return "devices/bluetooth-symbolic";
+    }
+
     function getNetworkMaterialSymbol() {
         if (Network.ethernet) return "lan";
         if (Network.wifiEnabled && Network.wifiStatus === "connected") {
@@ -108,5 +124,64 @@ Singleton {
         if (weatherIconMap.hasOwnProperty(key)) {
             return weatherIconMap[key]
         }
+    }
+
+    readonly property var weatherCosmicIconMap: ({
+        "113": "status/weather-clear-symbolic",
+        "116": "status/weather-few-clouds-symbolic",
+        "119": "status/weather-overcast-symbolic",
+        "122": "status/weather-overcast-symbolic",
+        "143": "status/weather-fog-symbolic",
+        "176": "status/weather-showers-scattered-symbolic",
+        "179": "status/weather-showers-scattered-symbolic",
+        "182": "status/weather-showers-scattered-symbolic",
+        "185": "status/weather-showers-scattered-symbolic",
+        "200": "status/weather-storm-symbolic",
+        "227": "status/weather-snow-symbolic",
+        "230": "status/weather-snow-symbolic",
+        "248": "status/weather-fog-symbolic",
+        "260": "status/weather-fog-symbolic",
+        "263": "status/weather-showers-scattered-symbolic",
+        "266": "status/weather-showers-scattered-symbolic",
+        "281": "status/weather-showers-scattered-symbolic",
+        "284": "status/weather-showers-scattered-symbolic",
+        "293": "status/weather-showers-scattered-symbolic",
+        "296": "status/weather-showers-scattered-symbolic",
+        "299": "status/weather-showers-symbolic",
+        "302": "status/weather-showers-symbolic",
+        "305": "status/weather-showers-symbolic",
+        "308": "status/weather-showers-symbolic",
+        "311": "status/weather-showers-symbolic",
+        "314": "status/weather-showers-symbolic",
+        "317": "status/weather-showers-symbolic",
+        "320": "status/weather-snow-symbolic",
+        "323": "status/weather-snow-symbolic",
+        "326": "status/weather-snow-symbolic",
+        "329": "status/weather-snow-symbolic",
+        "332": "status/weather-snow-symbolic",
+        "335": "status/weather-snow-symbolic",
+        "338": "status/weather-snow-symbolic",
+        "350": "status/weather-showers-symbolic",
+        "353": "status/weather-showers-scattered-symbolic",
+        "356": "status/weather-showers-symbolic",
+        "359": "status/weather-showers-symbolic",
+        "362": "status/weather-showers-scattered-symbolic",
+        "365": "status/weather-showers-symbolic",
+        "368": "status/weather-snow-symbolic",
+        "371": "status/weather-snow-symbolic",
+        "374": "status/weather-showers-symbolic",
+        "377": "status/weather-showers-symbolic",
+        "386": "status/weather-storm-symbolic",
+        "389": "status/weather-storm-symbolic",
+        "392": "status/weather-storm-symbolic",
+        "395": "status/weather-snow-symbolic"
+    })
+
+    function getWeatherCosmicIcon(code) {
+        const key = String(code)
+        if (weatherCosmicIconMap.hasOwnProperty(key)) {
+            return weatherCosmicIconMap[key]
+        }
+        return "status/weather-overcast-symbolic"
     }
 }

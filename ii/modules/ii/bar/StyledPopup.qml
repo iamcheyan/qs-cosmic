@@ -67,11 +67,11 @@ LazyLoader {
             implicitWidth: root.contentItem.implicitWidth + margin * 2
             implicitHeight: root.contentItem.implicitHeight + margin * 2
             color: Appearance.tiling.bg
-            radius: 0
+            radius: Appearance.tiling.dialogRadius
             children: [root.contentItem]
 
             border.width: Appearance.tiling.borderWidth
-            border.color: Appearance.tiling.borderFocus
+            border.color: Appearance.tiling.border
         }
     }
 }

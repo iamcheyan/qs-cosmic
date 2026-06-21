@@ -14,7 +14,7 @@ StyledPopup {
 
         // Header
         StyledPopupHeaderRow {
-            icon: "battery_android_full"
+            icon: "devices/battery-symbolic"
             label: Translation.tr("Battery")
         }
 
@@ -24,7 +24,7 @@ StyledPopup {
                 let power = Battery.energyRate;
                 return !(Battery.chargeState == 4 || timeValue <= 0 || power <= 0.01);
             }
-            icon: "schedule"
+            icon: "actions/appointment-new-symbolic"
             label: Battery.isCharging ? Translation.tr("Time to full:") : Translation.tr("Time to empty:")
             value: {
                 function formatTime(seconds) {
@@ -44,7 +44,7 @@ StyledPopup {
 
         StyledPopupValueRow {
             visible:  !(Battery.chargeState != 4 && Battery.energyRate == 0)
-            icon: "bolt"
+            icon: "status/plugged-into-power-symbolic"
             label: {
                 if (Battery.chargeState == 4) {
                     return Translation.tr("Fully charged");
@@ -64,7 +64,7 @@ StyledPopup {
         }
 
         StyledPopupValueRow {
-            icon: "heart_check"
+            icon: "status/security-high-symbolic"
             label: Translation.tr("Health:")
             value: `${(Battery.health).toFixed(1)}%`
         }

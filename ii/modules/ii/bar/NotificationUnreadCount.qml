@@ -3,12 +3,19 @@ import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 
-MaterialSymbol {
+Item {
     id: root
     readonly property bool showUnreadCount: Config.options.bar.indicators.notifications.showUnreadCount
-    text: Notifications.silent ? "notifications_paused" : "notifications"
-    iconSize: Appearance.font.pixelSize.larger
-    color: rightSidebarButton.colText
+    implicitWidth: notificationIcon.implicitWidth
+    implicitHeight: notificationIcon.implicitHeight
+
+    CosmicIcon {
+        id: notificationIcon
+        anchors.fill: parent
+        name: Notifications.silent ? "status/notification-disabled-symbolic" : "status/notification-symbolic"
+        iconSize: Appearance.font.pixelSize.larger
+        color: rightSidebarButton.colText
+    }
 
     Rectangle {
         id: notifPing

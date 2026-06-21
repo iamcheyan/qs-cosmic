@@ -32,9 +32,8 @@ MouseArea {
         id: rowLayout
         anchors.centerIn: parent
 
-        MaterialSymbol {
-            fill: 0
-            text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
+        CosmicIcon {
+            name: Icons.getWeatherCosmicIcon(Weather.data.wCode)
             iconSize: Appearance.font.pixelSize.larger
             color: Appearance.colors.colOnLayer1
             Layout.alignment: Qt.AlignVCenter

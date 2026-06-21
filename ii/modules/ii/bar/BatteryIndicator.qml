@@ -24,13 +24,11 @@ MouseArea {
         anchors.centerIn: parent
         spacing: 4
 
-        MaterialSymbol {
+        CosmicIcon {
             Layout.alignment: Qt.AlignVCenter
-            fill: 1
-            text: isCharging ? "battery_charging_full" : Icons.getBatteryIcon(Battery.percentage * 100)
+            name: isCharging ? "status/plugged-into-power-symbolic" : "devices/battery-symbolic"
             iconSize: Appearance.font.pixelSize.larger
             color: root.colIcon
-            animateChange: true
         }
 
         StyledText {

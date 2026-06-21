@@ -15,10 +15,10 @@ DialogListItem {
     altAction: () => expanded = !expanded
     
     component ActionButton: DialogButton {
-        colBackground: Appearance.colors.colPrimary
-        colBackgroundHover: Appearance.colors.colPrimaryHover
-        colRipple: Appearance.colors.colPrimaryActive
-        colText: Appearance.colors.colOnPrimary
+        colBackground: Appearance.tiling.accent
+        colBackgroundHover: Appearance.tiling.accentBright
+        colRipple: Appearance.tiling.bgActive
+        colText: Appearance.tiling.textBright
     }
 
     contentItem: ColumnLayout {
@@ -34,10 +34,10 @@ DialogListItem {
             // Name
             spacing: 10
 
-            MaterialSymbol {
+            CosmicIcon {
                 iconSize: Appearance.font.pixelSize.larger
-                text: Icons.getBluetoothDeviceMaterialSymbol(root.device?.icon || "")
-                color: Appearance.colors.colOnSurfaceVariant
+                name: Icons.getBluetoothDeviceCosmicIcon(root.device?.icon || "")
+                color: Appearance.tiling.textDim
             }
 
             ColumnLayout {
@@ -45,7 +45,7 @@ DialogListItem {
                 Layout.fillWidth: true
                 StyledText {
                     Layout.fillWidth: true
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: Appearance.tiling.text
                     elide: Text.ElideRight
                     text: root.device?.name || Translation.tr("Unknown device")
                     textFormat: Text.PlainText
@@ -54,7 +54,7 @@ DialogListItem {
                     visible: (root.device?.connected || root.device?.paired) ?? false
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
+                    color: Appearance.tiling.textDim
                     elide: Text.ElideRight
                     text: {
                         if (!root.device?.paired) return "";
@@ -66,10 +66,10 @@ DialogListItem {
                 }
             }
 
-            MaterialSymbol {
-                text: "keyboard_arrow_down"
+            CosmicIcon {
+                name: "actions/pan-down-symbolic"
                 iconSize: Appearance.font.pixelSize.larger
-                color: Appearance.colors.colOnLayer3
+                color: Appearance.tiling.textDim
                 rotation: root.expanded ? 180 : 0
                 Behavior on rotation {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -85,10 +85,10 @@ DialogListItem {
             }
             ActionButton {
                 readonly property bool p: root.device?.paired ?? false
-                colBackground: p ? Appearance.colors.colError : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
-                colBackgroundHover: p ? Appearance.colors.colErrorHover : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
-                colRipple: p ? Appearance.colors.colErrorActive : Appearance.colors.colLayer3Hover
-                colText: p ? Appearance.colors.colOnError : Appearance.colors.colPrimary
+                colBackground: p ? Appearance.tiling.error : Appearance.tiling.bgActive
+                colBackgroundHover: p ? Appearance.tiling.error : Appearance.tiling.bgHover
+                colRipple: p ? Appearance.tiling.bgActive : Appearance.tiling.bgActive
+                colText: p ? Appearance.tiling.textBright : Appearance.tiling.text
 
                 buttonText: p ? Translation.tr("Forget") : Translation.tr("Always connect")
                 onClicked: {

@@ -85,20 +85,12 @@ Item {
             }
         }
 
-        WindowDialogButtonRow {
+        WindowDialogToolbar {
             Layout.bottomMargin: 10 // I honestly don't know why this is necessary
-            Item {
-                Layout.fillWidth: true
-            }
-            DialogButton {
-                buttonText: Translation.tr("Cancel")
-                onClicked: PolkitService.cancel();
-            }
-            DialogButton {
-                enabled: PolkitService.interactionAvailable
-                buttonText: Translation.tr("OK")
-                onClicked: root.submit();
-            }
+            trailingActions: [
+                { type: "text", text: Translation.tr("Cancel"), callback: () => PolkitService.cancel() },
+                { type: "text", text: Translation.tr("OK"), enabled: PolkitService.interactionAvailable, callback: () => root.submit() }
+            ]
         }
     }
 }

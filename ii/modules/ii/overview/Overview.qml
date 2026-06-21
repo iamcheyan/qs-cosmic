@@ -52,6 +52,8 @@ Scope {
         if (wsId < 1)
             return;
         GlobalStates.overviewFocusedWorkspaceId = wsId;
+        if (GlobalStates.overviewOpen && overviewScope.overviewGrabbed)
+            overviewScope.dispatchFocusWorkspace(wsId);
     }
 
     function navigateOverviewByIndex(delta) {
