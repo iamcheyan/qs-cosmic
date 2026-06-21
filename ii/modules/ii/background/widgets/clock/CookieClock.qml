@@ -138,7 +138,7 @@ Item {
     FadeLoader {
         id: secondHandLoader
         z: (Config.options.background.widgets.clock.cookie.secondHandStyle === "line") ? 2 : 3
-        shown: Config.options.time.secondPrecision && Config.options.background.widgets.clock.cookie.secondHandStyle !== "hide"
+        shown: false
         anchors.fill: parent
         sourceComponent: SecondHand {
             id: secondHand

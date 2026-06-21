@@ -78,13 +78,8 @@ Singleton {
         JsonAdapter {
             id: configOptionsJsonAdapter
 
-            property JsonObject policies: JsonObject {
-                property int weeb: 1 // 0: No | 1: Open | 2: Closet
-            }
-
             property JsonObject appearance: JsonObject {
                 property bool extraBackgroundTint: true
-                property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen
                 property JsonObject fonts: JsonObject {
                     property string main: "Google Sans Flex"
                     property string numbers: "Google Sans Flex"
@@ -110,10 +105,6 @@ Singleton {
                         property real termFgBoost: 0.35
                         property bool forceDarkMode: false
                     }
-                }
-                property JsonObject palette: JsonObject {
-                    property string type: "auto" // Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
-                    property string accentColor: ""
                 }
             }
 
@@ -225,15 +216,6 @@ Singleton {
                     property bool showDarkModeToggle: true
                     property bool showPerformanceProfileToggle: false
                     property bool showScreenRecord: false
-                }
-                property JsonObject workspaces: JsonObject {
-                    property bool monochromeIcons: true
-                    property int shown: 10
-                    property bool showAppIcons: true
-                    property bool alwaysShowNumbers: false
-                    property int showNumberDelay: 300 // milliseconds
-                    property list<string> numberMap: ["1", "2"] // Characters to show instead of numbers on workspace indicator
-                    property bool useNerdFont: false
                 }
                 property JsonObject weather: JsonObject {
                     property bool enable: false
@@ -447,14 +429,11 @@ Singleton {
             }
 
             property JsonObject sounds: JsonObject {
-                property bool battery: false
-                property bool pomodoro: false
                 property string theme: "freedesktop"
             }
 
             property JsonObject time: JsonObject {
                 // https://doc.qt.io/qt-6/qtime.html#toString
-                property string format: "hh:mm"
                 property string shortDateFormat: "dd/MM"
                 property string dateWithYearFormat: "dd/MM/yyyy"
                 property string dateFormat: "ddd, dd/MM"
@@ -464,7 +443,6 @@ Singleton {
                     property int focus: 1500
                     property int longBreak: 900
                 }
-                property bool secondPrecision: false
             }
 
             property JsonObject updates: JsonObject {
@@ -481,17 +459,6 @@ Singleton {
 
             property JsonObject hacks: JsonObject {
                 property int arbitraryRaceConditionDelay: 20 // milliseconds
-            }
-
-            property JsonObject workSafety: JsonObject {
-                property JsonObject enable: JsonObject {
-                    property bool wallpaper: false
-                }
-                property JsonObject triggerCondition: JsonObject {
-                    property list<string> networkNameKeywords: ["airport", "cafe", "college", "company", "eduroam", "free", "guest", "public", "school", "university"]
-                    property list<string> fileKeywords: ["anime", "booru", "ecchi", "hentai", "yande.re", "konachan", "breast", "nipples", "pussy", "nsfw", "spoiler", "girl"]
-                    property list<string> linkKeywords: ["hentai", "porn", "sukebei", "hitomi.la", "rule34", "gelbooru", "fanbox", "dlsite"]
-                }
             }
 
         }

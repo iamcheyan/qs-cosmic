@@ -313,10 +313,10 @@ main() {
     noswitch_flag=""
 
     get_type_from_config() {
-        jq -r '.appearance.palette.type' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "auto"
+        jq -r '.appearance.palette.type // "auto"' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "auto"
     }
     get_accent_color_from_config() {
-        jq -r '.appearance.palette.accentColor' "$SHELL_CONFIG_FILE" 2>/dev/null || echo ""
+        jq -r '.appearance.palette.accentColor // ""' "$SHELL_CONFIG_FILE" 2>/dev/null || echo ""
     }
     set_accent_color() {
         local color="$1"
