@@ -13,14 +13,14 @@ import Quickshell.Services.UPower
 Item {
     id: root
     property bool borderless: Config.options.bar.borderless
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
+    implicitWidth: rowLayout.implicitWidth
     implicitHeight: rowLayout.implicitHeight
 
     RowLayout {
         id: rowLayout
 
-        spacing: 4
-        anchors.centerIn: parent
+        spacing: 16
+        anchors.fill: parent
 
         Loader {
             active: Config.options.bar.utilButtons.showScreenSnip
@@ -56,9 +56,9 @@ Item {
 
                 CosmicIcon {
                     anchors.centerIn: screenshotButton
-                    name: "actions/view-fullscreen-symbolic"
-                    iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colOnLayer2
+                    name: "apps/accessories-screenshot-symbolic"
+                    iconSize: Appearance.font.pixelSize.larger + 1
+                    color: "#ffffff"
                 }
 
                 PopupToolTip {
@@ -105,7 +105,7 @@ Item {
                     CosmicIcon {
                         anchors.centerIn: parent
                         name: "actions/pencil-symbolic"
-                        iconSize: Appearance.font.pixelSize.larger
+                        iconSize: Appearance.font.pixelSize.larger + 1
                         color: Appearance.colors.colOnLayer2
                     }
                     PopupToolTip {
@@ -129,7 +129,7 @@ Item {
                     CosmicIcon {
                         anchors.centerIn: parent
                         name: Pipewire.defaultAudioSource?.audio?.muted ? "status/microphone-sensitivity-muted-symbolic" : "status/microphone-sensitivity-high-symbolic"
-                        iconSize: Appearance.font.pixelSize.larger
+                        iconSize: Appearance.font.pixelSize.larger + 1
                         color: Appearance.colors.colOnLayer2
                     }
                     PopupToolTip {
@@ -159,53 +159,11 @@ Item {
                     CosmicIcon {
                         anchors.centerIn: parent
                         name: Appearance.m3colors.darkmode ? "status/display-brightness-high-symbolic" : "status/display-brightness-low-symbolic"
-                        iconSize: Appearance.font.pixelSize.larger
+                        iconSize: Appearance.font.pixelSize.larger + 1
                         color: Appearance.colors.colOnLayer2
                     }
                     PopupToolTip {
                         text: Translation.tr("Dark Mode")
-                        anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                    }
-                }
-            }
-        }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showPerformanceProfileToggle
-            visible: Config.options.bar.utilButtons.showPerformanceProfileToggle
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
-                onClicked: event => {
-                    if (PowerProfiles.hasPerformanceProfile) {
-                        switch(PowerProfiles.profile) {
-                            case PowerProfile.PowerSaver: PowerProfiles.profile = PowerProfile.Balanced
-                            break;
-                            case PowerProfile.Balanced: PowerProfiles.profile = PowerProfile.Performance
-                            break;
-                            case PowerProfile.Performance: PowerProfiles.profile = PowerProfile.PowerSaver
-                            break;
-                        }
-                    } else {
-                        PowerProfiles.profile = PowerProfiles.profile == PowerProfile.Balanced ? PowerProfile.PowerSaver : PowerProfile.Balanced
-                    }
-                }
-                Item {
-                    implicitWidth: 20
-                    implicitHeight: 20
-                    property bool hovered: parent.hovered
-                    CosmicIcon {
-                        anchors.centerIn: parent
-                        name: switch(PowerProfiles.profile) {
-                            case PowerProfile.PowerSaver: return "status/display-brightness-medium-symbolic"
-                            case PowerProfile.Balanced: return "status/display-brightness-medium-symbolic"
-                            case PowerProfile.Performance: return "status/software-update-urgent-symbolic"
-                            default: return "status/display-brightness-medium-symbolic"
-                        }
-                        iconSize: Appearance.font.pixelSize.larger
-                        color: Appearance.colors.colOnLayer2
-                    }
-                    PopupToolTip {
-                        text: Translation.tr("Click to cycle through power profiles")
                         anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
                     }
                 }

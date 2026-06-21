@@ -132,6 +132,8 @@
   "Also unlock keyring": "Also unlock keyring",
   "Configuration": "Configuration",
   "Keep system awake": "Keep system awake",
+  "Auto-sleep disabled": "Auto-sleep disabled (system will not sleep)",
+  "Auto-sleep enabled": "Auto-sleep enabled (system will auto-sleep)",
   "Unknown command:": "Unknown command:",
   "Anime boorus": "Anime boorus",
   "To Do:": "To Do:",

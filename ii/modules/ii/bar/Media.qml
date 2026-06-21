@@ -17,7 +17,7 @@ Item {
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
     Layout.fillHeight: true
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
+    implicitWidth: rowLayout.implicitWidth
     implicitHeight: Appearance.sizes.barHeight
 
     Timer {
@@ -58,8 +58,18 @@ Item {
         spacing: 4
         anchors.fill: parent
 
+        CosmicIcon {
+            id: noMediaIcon
+            visible: !(activePlayer !== null && activePlayer !== undefined)
+            Layout.alignment: Qt.AlignVCenter
+            name: "apps/multimedia-audio-player-symbolic"
+            iconSize: Appearance.font.pixelSize.larger
+            color: Appearance.colors.colSubtext
+        }
+
         ClippedFilledCircularProgress {
             id: mediaCircProg
+            visible: (activePlayer !== null && activePlayer !== undefined)
             Layout.alignment: Qt.AlignVCenter
             lineWidth: Appearance.rounding.unsharpen
             value: activePlayer?.position / activePlayer?.length
@@ -82,7 +92,7 @@ Item {
         }
 
         StyledText {
-            visible: Config.options.bar.verbose
+            visible: Config.options.bar.verbose && (activePlayer !== null && activePlayer !== undefined)
             width: rowLayout.width - (CircularProgress.size + rowLayout.spacing * 2)
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true // Ensures the text takes up available space

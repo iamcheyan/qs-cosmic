@@ -16,10 +16,14 @@ import Quickshell.Hyprland
 WindowDialog {
     id: root
     backgroundHeight: 600
+    anchorPosition: 1
 
-    WindowDialogTitle {
-        text: Translation.tr("Bluetooth devices")
+    onVisibleChanged: {
+        if (visible) {
+            root.forceActiveFocus();
+        }
     }
+
     WindowDialogSeparator {
         visible: !(Bluetooth.defaultAdapter?.discovering ?? false)
     }
@@ -56,15 +60,48 @@ WindowDialog {
         }
     }
     WindowDialogSeparator {}
-    WindowDialogToolbar {
-        leadingActions: [
-            { type: "text", text: Translation.tr("Details"), callback: () => {
+
+    RowLayout {
+        Layout.fillWidth: true
+        Layout.leftMargin: 8
+        Layout.rightMargin: 8
+        Layout.topMargin: 4
+        Layout.bottomMargin: 4
+        spacing: 6
+
+        RippleButton {
+            implicitHeight: 28
+            implicitWidth: 28
+            buttonRadius: 14
+            colBackgroundHover: Appearance.tiling.bgHover
+            colRipple: Appearance.tiling.bgActive
+            onClicked: {
                 Quickshell.execDetached(["bash", "-c", `${Config.options.apps.bluetooth}`]);
                 GlobalStates.sidebarRightOpen = false;
-            }}
-        ]
-        trailingActions: [
-            { type: "text", text: Translation.tr("Done"), callback: () => root.dismiss() }
-        ]
+            }
+            MaterialSymbol {
+                anchors.centerIn: parent
+                text: "settings"
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: Appearance.tiling.text
+            }
+        }
+
+        Item { Layout.fillWidth: true }
+
+        RippleButton {
+            implicitHeight: 28
+            implicitWidth: 28
+            buttonRadius: 14
+            colBackgroundHover: Appearance.tiling.bgHover
+            colRipple: Appearance.tiling.bgActive
+            onClicked: root.dismiss()
+            MaterialSymbol {
+                anchors.centerIn: parent
+                text: "check"
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: Appearance.tiling.text
+            }
+        }
     }
 }

@@ -113,6 +113,14 @@ Scope {
                     show: visible
                     onDismiss: overlayWindow.close()
                 }
+
+                BatteryDialog {
+                    id: batteryDialog
+                    anchors.fill: parent
+                    visible: GlobalStates.barDialogType === "battery"
+                    show: visible
+                    onDismiss: overlayWindow.close()
+                }
             }
         }
     }

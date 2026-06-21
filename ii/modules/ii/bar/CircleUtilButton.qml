@@ -9,6 +9,7 @@ RippleButton {
     required default property Item content
     property bool extraActiveCondition: false
 
+    padding: 0
     implicitHeight: Math.max(content.implicitHeight, 20)
     implicitWidth: implicitHeight
     contentItem: content

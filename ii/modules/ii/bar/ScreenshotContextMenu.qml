@@ -118,8 +118,8 @@ PopupWindow {
 
                         CosmicIcon {
                             iconSize: 16
-                            name: "actions/view-fullscreen-symbolic"
-                            color: Appearance.colors.colOnLayer0
+                            name: "apps/accessories-screenshot-symbolic"
+                            color: "#ffffff"
                         }
 
                         StyledText {
@@ -139,7 +139,7 @@ PopupWindow {
                     Layout.fillWidth: true
 
                     releaseAction: () => {
-                        Quickshell.execDetached(["bash", "-c", "grim - | wl-copy && notify-send -i camera-photo Screenshot \"Full screen copied to clipboard\""]);
+                        Quickshell.execDetached(["bash", "-c", "grim -o $(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name') - | wl-copy && notify-send -i camera-photo Screenshot \"Full screen copied to clipboard\""]);
                         root.close();
                     }
 
@@ -155,8 +155,8 @@ PopupWindow {
 
                         CosmicIcon {
                             iconSize: 16
-                            name: "actions/view-fullscreen-symbolic"
-                            color: Appearance.colors.colOnLayer0
+                            name: "apps/accessories-screenshot-symbolic"
+                            color: "#ffffff"
                         }
 
                         StyledText {

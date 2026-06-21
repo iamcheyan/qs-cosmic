@@ -136,7 +136,7 @@ Button {
     background: Rectangle {
         id: buttonBackground
         radius: root.buttonEffectiveRadius
-        implicitHeight: 30
+        implicitHeight: 0
 
         color: root.buttonColor
         border.width: root.borderWidth

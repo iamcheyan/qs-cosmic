@@ -1,3 +1,4 @@
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -14,10 +15,20 @@ MouseArea {
     readonly property bool isLow: percentage <= Config.options.battery.low / 100
     readonly property color colIcon: (isLow && !isCharging) ? Appearance.m3colors.m3error : Appearance.colors.colOnLayer0
 
-    implicitWidth: rowLayout.implicitWidth + 10 * 2
+    implicitWidth: rowLayout.implicitWidth
     implicitHeight: Appearance.sizes.barHeight
 
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    cursorShape: Qt.PointingHandCursor
+    onClicked: {
+        if (GlobalStates.barDialogOpen && GlobalStates.barDialogType === "battery") {
+            GlobalStates.barDialogOpen = false;
+            GlobalStates.barDialogType = "";
+        } else {
+            GlobalStates.barDialogType = "battery";
+            GlobalStates.barDialogOpen = true;
+        }
+    }
 
     RowLayout {
         id: rowLayout
@@ -27,23 +38,13 @@ MouseArea {
         CosmicIcon {
             Layout.alignment: Qt.AlignVCenter
             name: isCharging ? "status/plugged-into-power-symbolic" : "devices/battery-symbolic"
-            iconSize: Appearance.font.pixelSize.larger
+            iconSize: Appearance.font.pixelSize.larger + 1
             color: root.colIcon
-        }
-
-        StyledText {
-            Layout.alignment: Qt.AlignVCenter
-            font {
-                pixelSize: Appearance.font.pixelSize.small
-                weight: Font.DemiBold
-            }
-            color: root.colIcon
-            text: `${Math.round(percentage * 100)}%`
         }
     }
 
-    BatteryPopup {
-        id: batteryPopup
+    BatteryHoverPopup {
+        id: batteryHoverPopup
         hoverTarget: root
     }
 }

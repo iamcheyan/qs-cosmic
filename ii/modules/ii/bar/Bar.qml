@@ -103,6 +103,7 @@ Scope {
 
                     BarContent {
                         id: barContent
+                        isHovered: hoverRegion.containsMouse || barContent.anyChildActive
                         
                         implicitHeight: Appearance.sizes.barHeight
                         anchors {
