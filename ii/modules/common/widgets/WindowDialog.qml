@@ -15,7 +15,6 @@ Rectangle {
     property real backgroundAnimationMovementDistance: 60
     property int anchorPosition: 0 // 0 = center, 1 = top-right
     property real anchorMargin: 8
-    focus: true
 
     signal dismiss()
     Keys.onPressed: (event) => {
@@ -30,7 +29,6 @@ Rectangle {
 
     onShowChanged: {
         dialogBackgroundHeightAnimation.easing.bezierCurve = (show ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel)
-        dialogBackground.implicitHeight = show ? backgroundHeight : 0
     }
 
     radius: 0
@@ -39,7 +37,6 @@ Rectangle {
         anchors.fill: parent
         acceptedButtons: Qt.AllButtons
         hoverEnabled: true
-        focus: false
         onPressed: root.dismiss()
     }
 
@@ -78,7 +75,6 @@ Rectangle {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
             hoverEnabled: true
-            focus: false
         }
 
         ColumnLayout {

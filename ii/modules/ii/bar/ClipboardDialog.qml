@@ -4,46 +4,37 @@ import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
+import qs.modules.common.functions
 import Quickshell
 
 WindowDialog {
     id: root
-    backgroundHeight: 15 * 36 + 80
+    backgroundHeight: itemsPerPage * 23 + 56
     backgroundWidth: 380
     anchorPosition: 1
     anchorMargin: 8
 
     property int keyboardIndex: 0
     property int currentPage: 0
-    property int itemsPerPage: 15
+    property int itemsPerPage: 20
+    property var pageEntries: Cliphist.entries.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage)
     property int totalPages: Math.max(1, Math.ceil(Cliphist.entries.length / itemsPerPage))
 
-    function updatePageEntries() {
-        const start = currentPage * itemsPerPage;
-        const entries = Cliphist.entries.slice(start, start + itemsPerPage);
-        clipboardModel.clear();
-        for (let i = 0; i < entries.length; i++) {
-            clipboardModel.append({"modelData": entries[i]});
-        }
-    }
-
-    onCurrentPageChanged: updatePageEntries()
+    onCurrentPageChanged: pageEntries = Cliphist.entries.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage)
     onVisibleChanged: {
         if (visible) {
-            Cliphist.refresh();
             currentPage = 0;
             keyboardIndex = 0;
-            Qt.callLater(() => {
-                updatePageEntries();
-                root.forceActiveFocus();
-            });
+            pageEntries = Cliphist.entries.slice(0, itemsPerPage);
+            root.forceActiveFocus();
+            Cliphist.refresh();
         }
     }
 
     Connections {
         target: Cliphist
         function onEntriesChanged() {
-            updatePageEntries();
+            pageEntries = Cliphist.entries.slice(currentPage * itemsPerPage, currentPage * itemsPerPage + itemsPerPage);
         }
     }
 
@@ -72,8 +63,8 @@ WindowDialog {
     Keys.onPressed: (event) => {
         if (event.key === Qt.Key_Down) {
             event.accepted = true;
-            if (clipboardModel.count === 0) return;
-            keyboardIndex = Math.min(keyboardIndex + 1, clipboardModel.count - 1);
+            if (pageEntries.length === 0) return;
+            keyboardIndex = Math.min(keyboardIndex + 1, pageEntries.length - 1);
         } else if (event.key === Qt.Key_Up) {
             event.accepted = true;
             keyboardIndex = Math.max(keyboardIndex - 1, 0);
@@ -91,8 +82,8 @@ WindowDialog {
 
     ListView {
         id: clipboardList
-        Layout.fillHeight: true
         Layout.fillWidth: true
+        Layout.fillHeight: true
         Layout.topMargin: 2
         Layout.bottomMargin: 2
         Layout.leftMargin: 0
@@ -105,8 +96,8 @@ WindowDialog {
         highlightMoveDuration: 0
         interactive: false
 
-        model: ListModel {
-            id: clipboardModel
+        model: ScriptModel {
+            values: root.pageEntries
         }
 
         delegate: ClipboardItem {
@@ -127,19 +118,25 @@ WindowDialog {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
             onWheel: (event) => {
-                if (event.angleDelta.y > 0) {
-                    if (root.keyboardIndex > 0) {
-                        root.keyboardIndex--;
-                    } else {
-                        root.prevPage();
-                        root.keyboardIndex = Math.min(clipboardModel.count - 1, root.itemsPerPage - 1);
+                const steps = WheelUtils.getSteps(event.angleDelta.y)
+                if (steps === 0) return
+                if (steps > 0) {
+                    for (let i = 0; i < steps; i++) {
+                        if (root.keyboardIndex > 0) {
+                            root.keyboardIndex--;
+                        } else {
+                            root.prevPage();
+                            root.keyboardIndex = Math.min(root.pageEntries.length - 1, root.itemsPerPage - 1);
+                        }
                     }
-                } else if (event.angleDelta.y < 0) {
-                    if (root.keyboardIndex < clipboardModel.count - 1) {
-                        root.keyboardIndex++;
-                    } else {
-                        root.nextPage();
-                        root.keyboardIndex = 0;
+                } else {
+                    for (let i = 0; i < -steps; i++) {
+                        if (root.keyboardIndex < root.pageEntries.length - 1) {
+                            root.keyboardIndex++;
+                        } else {
+                            root.nextPage();
+                            root.keyboardIndex = 0;
+                        }
                     }
                 }
                 event.accepted = true;

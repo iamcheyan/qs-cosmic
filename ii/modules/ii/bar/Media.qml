@@ -41,10 +41,11 @@ Item {
             }
         }
         onWheel: wheel => {
-            if (wheel.angleDelta.y > 0)
-                Audio.incrementVolume();
-            else if (wheel.angleDelta.y < 0)
-                Audio.decrementVolume();
+            const steps = WheelUtils.getSteps(wheel.angleDelta.y)
+            for (let i = 0; i < Math.abs(steps); i++) {
+                if (steps > 0) Audio.incrementVolume();
+                else if (steps < 0) Audio.decrementVolume();
+            }
             wheel.accepted = true;
         }
     }

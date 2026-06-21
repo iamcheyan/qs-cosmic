@@ -128,10 +128,9 @@ Item {
             acceptedButtons: Qt.NoButton
             enabled: root.overviewNavigationActive
             onWheel: wheel => {
-                if (wheel.angleDelta.y > 0)
-                    root.cycleOverviewWorkspace(-1);
-                else if (wheel.angleDelta.y < 0)
-                    root.cycleOverviewWorkspace(1);
+                const steps = WheelUtils.getSteps(wheel.angleDelta.y)
+                if (steps !== 0)
+                    root.cycleOverviewWorkspace(-steps);
                 wheel.accepted = true;
             }
         }
@@ -212,10 +211,9 @@ Item {
                         acceptedButtons: Qt.LeftButton
                         onWheel: wheel => {
                             if (root.overviewNavigationActive) {
-                                if (wheel.angleDelta.y > 0)
-                                    root.cycleOverviewWorkspace(-1);
-                                else if (wheel.angleDelta.y < 0)
-                                    root.cycleOverviewWorkspace(1);
+                                const steps = WheelUtils.getSteps(wheel.angleDelta.y)
+                                if (steps !== 0)
+                                    root.cycleOverviewWorkspace(-steps);
                                 wheel.accepted = true;
                             }
                         }
@@ -341,10 +339,9 @@ Item {
                         drag.target: parent
                         onWheel: wheel => {
                             if (root.overviewNavigationActive) {
-                                if (wheel.angleDelta.y > 0)
-                                    root.cycleOverviewWorkspace(-1);
-                                else if (wheel.angleDelta.y < 0)
-                                    root.cycleOverviewWorkspace(1);
+                                const steps = WheelUtils.getSteps(wheel.angleDelta.y)
+                                if (steps !== 0)
+                                    root.cycleOverviewWorkspace(-steps);
                                 wheel.accepted = true;
                             }
                         }

@@ -1,4 +1,5 @@
 import QtQuick
+import qs.modules.common.functions
 
 MouseArea { // Right side | scroll to change volume
     id: root
@@ -26,10 +27,11 @@ MouseArea { // Right side | scroll to change volume
     }
 
     onWheel: event => {
-        if (event.angleDelta.y < 0)
-            root.scrollDown(event.angleDelta.y);
-        else if (event.angleDelta.y > 0)
-            root.scrollUp(event.angleDelta.y);
+        const steps = WheelUtils.getSteps(event.angleDelta.y)
+        if (steps < 0)
+            root.scrollDown(-steps);
+        else if (steps > 0)
+            root.scrollUp(steps);
         // Store the mouse position and start tracking
         root.lastScrollX = event.x;
         root.lastScrollY = event.y;

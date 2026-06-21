@@ -1,6 +1,7 @@
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import "calendar_layout.js" as CalendarLayout
 import QtQuick
 import QtQuick.Layouts
@@ -28,11 +29,8 @@ Item {
     MouseArea {
         anchors.fill: parent
         onWheel: (event) => {
-            if (event.angleDelta.y > 0) {
-                monthShift--;
-            } else if (event.angleDelta.y < 0) {
-                monthShift++;
-            }
+            const steps = WheelUtils.getSteps(event.angleDelta.y)
+            monthShift -= steps;
         }
     }
 

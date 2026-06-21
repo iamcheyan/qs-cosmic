@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.models
+import qs.modules.common.functions
 
 TabBar {
     id: root
@@ -12,8 +13,11 @@ TabBar {
     background: Item {
         WheelHandler {
             onWheel: (event) => {
-                if (event.angleDelta.y < 0) root.incrementCurrentIndex();
-                else if (event.angleDelta.y > 0) root.decrementCurrentIndex();
+                const steps = WheelUtils.getSteps(event.angleDelta.y)
+                for (let i = 0; i < Math.abs(steps); i++) {
+                    if (steps < 0) root.incrementCurrentIndex();
+                    else if (steps > 0) root.decrementCurrentIndex();
+                }
             }
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         }

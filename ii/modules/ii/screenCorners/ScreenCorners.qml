@@ -1,6 +1,7 @@
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 import QtQuick
 import QtQuick.Controls
@@ -158,17 +159,17 @@ Scope {
                     onPressed: {
                         screenCorners.actionForCorner[cornerPanelWindow.corner]();
                     }
-                    onScrollDown: {
+                    onScrollDown: (steps) => {
                         if (!Config.options.sidebar.cornerOpen.valueScroll)
                             return;
                         if (cornerWidget.isLeft)
-                            Brightness.decreaseBrightness()
+                            for (let i = 0; i < steps; i++) Brightness.decreaseBrightness()
                     }
-                    onScrollUp: {
+                    onScrollUp: (steps) => {
                         if (!Config.options.sidebar.cornerOpen.valueScroll)
                             return;
                         if (cornerWidget.isLeft)
-                            Brightness.increaseBrightness()
+                            for (let i = 0; i < steps; i++) Brightness.increaseBrightness()
                     }
                     onMovedAway: {
                         if (!Config.options.sidebar.cornerOpen.valueScroll)
