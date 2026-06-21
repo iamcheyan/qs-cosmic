@@ -13,6 +13,9 @@ Rectangle {
     property real backgroundHeight: 400
     property real backgroundWidth: 360
     property real backgroundAnimationMovementDistance: 60
+    property int anchorPosition: 0 // 0 = center, 1 = top-right
+    property real anchorMargin: 8
+    focus: true
 
     signal dismiss()
     Keys.onPressed: (event) => {
@@ -36,18 +39,22 @@ Rectangle {
         anchors.fill: parent
         acceptedButtons: Qt.AllButtons
         hoverEnabled: true
+        focus: false
         onPressed: root.dismiss()
     }
 
     Rectangle {
         id: dialogBackground
-        anchors.horizontalCenter: parent.horizontalCenter
-        radius: 0
+        anchors.horizontalCenter: root.anchorPosition === 0 ? parent.horizontalCenter : undefined
+        anchors.right: root.anchorPosition === 1 ? parent.right : undefined
+        anchors.rightMargin: root.anchorPosition === 1 ? root.anchorMargin : 0
+        radius: 6
         color: Appearance.tiling.bg
         border.width: Appearance.tiling.borderWidth
-        border.color: Appearance.tiling.borderFocus
+        border.color: Appearance.tiling.border
+        clip: true
 
-        property real targetY: root.height / 2 - root.backgroundHeight / 2
+        property real targetY: root.anchorPosition === 1 ? (Config.options.bar.bottom ? (root.height - Appearance.sizes.barHeight - root.backgroundHeight - root.anchorMargin) : (Appearance.sizes.barHeight + root.anchorMargin)) : (root.height / 2 - root.backgroundHeight / 2)
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
         implicitWidth: root.backgroundWidth
         implicitHeight: show ? root.backgroundHeight : 0
@@ -71,6 +78,7 @@ Rectangle {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
             hoverEnabled: true
+            focus: false
         }
 
         ColumnLayout {

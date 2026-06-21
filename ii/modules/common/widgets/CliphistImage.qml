@@ -18,7 +18,7 @@ Rectangle {
     property string imageDecodePath: Directories.cliphistDecode
     property string imageDecodeFileName: `${entryNumber}`
     property string imageDecodeFilePath: `${imageDecodePath}/${imageDecodeFileName}`
-    property string source
+    property string imageSource: ""
 
     property int entryNumber: {
         if (!root.entry)
@@ -46,34 +46,23 @@ Rectangle {
     radius: Appearance.rounding.small
     implicitHeight: imageHeight * scale
     implicitWidth: imageWidth * scale
+    clip: true
 
     Component.onCompleted: {
-        decodeImageProcess.running = true;
+        // Check if cached file is a valid image, otherwise decode fresh
+        checkAndDecode.running = true;
     }
 
     Process {
-        id: decodeImageProcess
-        command: ["bash", "-c", `[ -f ${imageDecodeFilePath} ] || echo '${StringUtils.shellSingleQuoteEscape(root.entry)}' | ${Cliphist.cliphistBinary} decode > '${imageDecodeFilePath}'`]
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode === 0) {
-                root.source = imageDecodeFilePath;
-            } else {
-                console.error("[CliphistImage] Failed to decode image for entry:", root.entry);
-                root.source = "";
+        id: checkAndDecode
+        command: ["bash", "-c", `if file '${imageDecodeFilePath}' 2>/dev/null | grep -qi 'image\\|png\\|jpeg\\|bmp\\|webp\\|gif'; then echo cached; else rm -f '${imageDecodeFilePath}' && printf '${StringUtils.shellSingleQuoteEscape(root.entry)}' | ${Cliphist.cliphistBinary} decode > '${imageDecodeFilePath}' 2>/dev/null && file '${imageDecodeFilePath}' | grep -qi 'image\\|png\\|jpeg\\|bmp\\|webp\\|gif' && echo decoded; fi`]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const result = text.trim();
+                if (result === "cached" || result === "decoded") {
+                    root.imageSource = imageDecodeFilePath;
+                }
             }
-        }
-    }
-
-    Component.onDestruction: {
-        Quickshell.execDetached(["bash", "-c", `[ -f '${imageDecodeFilePath}' ] && rm -f '${imageDecodeFilePath}'`]);
-    }
-
-    layer.enabled: true
-    layer.effect: OpacityMask {
-        maskSource: Rectangle {
-            width: image.width
-            height: image.height
-            radius: root.radius
         }
     }
 
@@ -81,10 +70,11 @@ Rectangle {
         id: image
         anchors.fill: parent
 
-        source: Qt.resolvedUrl(root.source)
+        source: imageSource ? Qt.resolvedUrl(`file://${imageSource}`) : ""
         fillMode: Image.PreserveAspectFit
         antialiasing: true
         asynchronous: true
+        cache: true
 
         width: root.imageWidth * root.scale
         height: root.imageHeight * root.scale

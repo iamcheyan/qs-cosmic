@@ -4,13 +4,18 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 
 DialogListItem {
     id: root
     required property string entry
+    property bool keySelected: false
     signal itemClicked()
+
+    verticalPadding: 4
+    active: keySelected
 
     onClicked: {
         Cliphist.copy(entry);
@@ -20,7 +25,17 @@ DialogListItem {
     readonly property bool isImage: Cliphist.entryIsImage(entry)
     readonly property string cleanText: StringUtils.cleanCliphistEntry(entry)
 
-    contentItem: RowLayout {
+    // Image dimensions from entry string
+    readonly property int imgW: {
+        const match = entry.match(/(\d+)x(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+    }
+    readonly property int imgH: {
+        const match = entry.match(/(\d+)x(\d+)/);
+        return match ? parseInt(match[2]) : 0;
+    }
+
+    contentItem: Item {
         anchors {
             fill: parent
             topMargin: root.verticalPadding
@@ -28,109 +43,98 @@ DialogListItem {
             leftMargin: root.horizontalPadding
             rightMargin: root.horizontalPadding
         }
-        spacing: 10
+        implicitHeight: rowLayout.implicitHeight
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 4
-
-            RowLayout {
-                spacing: 10
-                MaterialSymbol {
-                    iconSize: Appearance.font.pixelSize.larger
-                    text: root.isImage ? "image" : "description"
-                    color: Appearance.colors.colOnSurfaceVariant
-                }
-                StyledText {
-                    Layout.fillWidth: true
-                    color: Appearance.colors.colOnSurfaceVariant
-                    elide: Text.ElideRight
-                    text: root.isImage ? Translation.tr("Binary Image Data") : root.cleanText
-                    textFormat: Text.PlainText
-                    font.pixelSize: Appearance.font.pixelSize.small
-                }
-            }
-
-            Loader {
-                active: root.isImage
-                Layout.fillWidth: true
-                Layout.leftMargin: Appearance.font.pixelSize.larger + 10
-                sourceComponent: CliphistImage {
-                    entry: root.entry
-                    maxWidth: parent.width - (Appearance.font.pixelSize.larger + 10)
-                    maxHeight: 80
-                }
-            }
+        Rectangle {
+            anchors.fill: parent
+            anchors.leftMargin: -root.horizontalPadding
+            anchors.rightMargin: -root.horizontalPadding
+            color: root.keySelected ? Appearance.colors.colSecondaryContainer : (root.hovered ? Appearance.tiling.bgHover : "transparent")
         }
 
         RowLayout {
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 4
-            visible: root.hovered || root.focus
+            id: rowLayout
+            anchors.fill: parent
+            spacing: 10
 
-            RippleButton {
-                id: copyButton
-                implicitHeight: 34
-                implicitWidth: 34
-                buttonRadius: Appearance.rounding.full
-                colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-                colRipple: Appearance.colors.colSecondaryContainerActive
-                onClicked: {
-                    Cliphist.copy(root.entry);
-                }
-                MaterialSymbol {
-                    anchors.centerIn: parent
-                    text: "content_copy"
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnSurface
-                }
-                StyledToolTip {
-                    text: Translation.tr("Copy")
-                }
+            MaterialSymbol {
+                iconSize: Appearance.font.pixelSize.larger
+                text: root.isImage ? "image" : "description"
+                color: Appearance.tiling.textDim
             }
 
-            RippleButton {
-                id: pasteButton
-                implicitHeight: 34
-                implicitWidth: 34
-                buttonRadius: Appearance.rounding.full
-                colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-                colRipple: Appearance.colors.colSecondaryContainerActive
-                onClicked: {
-                    Cliphist.paste(root.entry);
-                    root.itemClicked();
-                }
-                MaterialSymbol {
-                    anchors.centerIn: parent
-                    text: "content_paste"
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnSurface
-                }
-                StyledToolTip {
-                    text: Translation.tr("Paste")
-                }
+            StyledText {
+                Layout.fillWidth: true
+                color: Appearance.tiling.text
+                elide: Text.ElideRight
+                text: root.isImage ? `${root.imgW}x${root.imgH} image` : root.cleanText
+                textFormat: Text.PlainText
+                font.pixelSize: Appearance.font.pixelSize.small
+                font.family: Appearance.font.family.monospace
             }
+        }
+    }
 
-            RippleButton {
-                id: deleteButton
-                implicitHeight: 34
-                implicitWidth: 34
-                buttonRadius: Appearance.rounding.full
-                colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-                colRipple: Appearance.colors.colSecondaryContainerActive
-                onClicked: {
-                    Cliphist.deleteEntry(root.entry);
-                }
-                MaterialSymbol {
-                    anchors.centerIn: parent
-                    text: "delete"
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnSurface
-                }
-                StyledToolTip {
-                    text: Translation.tr("Delete")
+    // Proportional thumbnail dimensions (max 280px on longest side)
+    readonly property real thumbMaxDim: 280
+    readonly property real thumbScale: {
+        if (imgW === 0 || imgH === 0) return 1;
+        return Math.min(thumbMaxDim / imgW, thumbMaxDim / imgH, 1);
+    }
+    readonly property real thumbW: Math.round(imgW * thumbScale)
+    readonly property real thumbH: Math.round(imgH * thumbScale)
+    readonly property real thumbPad: 6
+
+    // Floating thumbnail popup for images on hover
+    Popup {
+        id: thumbPopup
+        parent: root
+        x: -(root.thumbW + root.thumbPad * 2 + 12)
+        y: (root.height - (root.thumbH + root.thumbPad * 2)) / 2
+        width: root.thumbW + root.thumbPad * 2
+        height: root.thumbH + root.thumbPad * 2
+        visible: false
+        padding: 0
+        margins: 0
+        clip: false
+        closePolicy: Popup.NoAutoClose
+
+        background: Rectangle {
+            color: Appearance.colors.colLayer1
+            border.width: 1
+            border.color: Appearance.colors.colOutlineVariant
+            radius: 8
+            clip: true
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: root.thumbPad
+                radius: 4
+                color: Appearance.colors.colLayer0
+                clip: true
+
+                Loader {
+                    anchors.fill: parent
+                    active: thumbPopup.visible
+                    sourceComponent: CliphistImage {
+                        entry: root.entry
+                        maxWidth: root.thumbW
+                        maxHeight: root.thumbH
+                    }
                 }
             }
+        }
+    }
+
+    onHoveredChanged: {
+        if (isImage) {
+            thumbPopup.visible = hovered;
+        }
+    }
+
+    onKeySelectedChanged: {
+        if (isImage && !keySelected) {
+            thumbPopup.visible = false;
         }
     }
 }

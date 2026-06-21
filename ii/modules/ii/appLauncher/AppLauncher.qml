@@ -23,14 +23,47 @@ PanelWindow {
 
     visible: GlobalStates.appLauncherOpen
 
-    readonly property string fontStack: (Appearance?.font?.family?.main ?? "sans-serif") + ", Noto Sans CJK SC, Noto Sans CJK TC, Noto Sans CJK JP, WenQuanYi Micro Hei, Source Han Sans SC, Source Han Sans TC, MesloLGS Nerd Font Mono, Cantarell, Inter, Open Sans, MesloLGS NF, Ubuntu Nerd Font, Ubuntu, Noto Sans Mono, sans-serif"
     readonly property string stateDir: Quickshell.shellDir + "/.state"
     readonly property string stateFile: stateDir + "/pinned-apps"
+
+    property real cardOffsetX: 0
+    property real cardOffsetY: 0
+    property string focusedAppDescription: ""
 
     function run(command) { Quickshell.execDetached(["sh", "-c", command]); }
 
     function quote(value) {
         return "'" + value.replace(/'/g, "'\\''") + "'";
+    }
+
+    function launchApp(desktopEntry) {
+        if (!desktopEntry || !desktopEntry.command || desktopEntry.command.length === 0) return;
+
+        const cmd = desktopEntry.command;
+        let program = cmd[0];
+        const args = [];
+        for (let i = 1; i < cmd.length; i++) {
+            if (cmd[i].startsWith("%")) continue;
+            args.push(cmd[i]);
+        }
+
+        if (program.includes("/")) {
+            // Already a path — launch directly with inherited env
+            Quickshell.execDetached({
+                command: [program].concat(args),
+                workingDirectory: desktopEntry.workingDirectory || ""
+            });
+        } else {
+            // Filter ~/.local/bin out of PATH so wrapper scripts (labwc-era)
+            // don't override native Hyprland scaling.
+            const q = (s) => "'" + s.replace(/'/g, "'\\''") + "'";
+            Quickshell.execDetached([
+                "sh", "-c",
+                'p=$(echo ":$PATH:" | sed "s|:$HOME/.local/bin:|:|g" | sed "s/^://; s/:$//") && ' +
+                'exec "$(PATH="$p" command -v ' + q(program) + ')" ' + args.map(q).join(" ")
+            ]);
+        }
+        console.log("[AppLauncher] Launched " + (program.includes("/") ? program : program + " " + args.join(" ")));
     }
 
     function iconSource(icon) {
@@ -45,9 +78,27 @@ PanelWindow {
     property var pinnedIds: ({})
     property var allApps: []
     property var filteredApps: []
-
-    // Set of currently running window classes (mapped, not hidden).
     property var runningSet: ({})
+    property bool pinnedIdsLoaded: false
+    property bool appsLoaded: false
+
+    function sameAppList(a, b) {
+        if (!a || !b || a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+            if ((a[i]?.id ?? "") !== (b[i]?.id ?? "")) return false;
+        }
+        return true;
+    }
+
+    function samePinnedIds(a, b) {
+        const ak = Object.keys(a || {}).filter(k => a[k]).sort();
+        const bk = Object.keys(b || {}).filter(k => b[k]).sort();
+        if (ak.length !== bk.length) return false;
+        for (let i = 0; i < ak.length; i++) {
+            if (ak[i] !== bk[i]) return false;
+        }
+        return true;
+    }
 
     function updateRunningSet() {
         const set = {};
@@ -63,8 +114,8 @@ PanelWindow {
         launcher.runningSet = set;
     }
 
-    // Returns true if a desktop entry appears to have at least one running window.
     function isAppRunning(app) {
+        if (!app) return false;
         const set = launcher.runningSet;
         if (!set) return false;
         let any = false;
@@ -73,7 +124,6 @@ PanelWindow {
 
         const id = (app.id || "").split("/").pop().split(".").pop().toLowerCase();
         let exec = (app.execString || "").split(" ")[0].split("/").pop().toLowerCase();
-        // Strip common suffixes like "-stable", "-bin"
         const stripped = exec.replace(/-stable$/, "").replace(/-bin$/, "").replace(/^env-/, "");
         const candidates = [id, exec, stripped];
         for (let i = 0; i < candidates.length; i++) {
@@ -81,7 +131,6 @@ PanelWindow {
             if (!c) continue;
             if (set[c]) return true;
         }
-        // Fuzzy: does any running class contain the app id, or vice versa?
         for (const k in set) {
             if (!k) continue;
             if (k === id || k === exec || k === stripped) return true;
@@ -92,6 +141,7 @@ PanelWindow {
     }
 
     function loadPinnedIds() {
+        if (pinnedIdsLoaded) return;
         pinnedLoadProcess.running = false;
         pinnedLoadProcess.running = true;
     }
@@ -101,10 +151,15 @@ PanelWindow {
         const apps = [];
         for (let i = 0; i < entries.length; i++) {
             const app = entries[i];
-            if (!app || app.noDisplay || !app.name) continue;
+            if (!app || app.noDisplay || !app.name || !app.id) continue;
             apps.push(app);
         }
-        allApps = apps;
+        appsLoaded = true;
+        if (!sameAppList(allApps, apps)) {
+            allApps = apps;
+        } else if (pinnedIdsLoaded) {
+            buildFilteredList();
+        }
     }
 
     function savePinnedIds() {
@@ -127,30 +182,38 @@ PanelWindow {
 
     function buildFilteredList() {
         const q = searchField.text.toLowerCase().trim();
-        const pinned = [];
-        const unpinned = [];
+        const list = [];
         for (let i = 0; i < allApps.length; i++) {
             const app = allApps[i];
+            if (!app || !app.id || !app.name) continue;
             const haystack = [
                 app.name,
                 app.id,
-                app.execString,
-                app.genericName,
-                app.comment,
+                app.execString || "",
+                app.genericName || "",
+                app.comment || "",
                 (app.keywords || []).join(" ")
             ].join(" ").toLowerCase();
             if (q !== "" && haystack.indexOf(q) < 0) continue;
-            if (pinnedIds[app.id]) pinned.push(app);
-            else unpinned.push(app);
+            list.push(app);
         }
-        function byName(a, b) { return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; }
-        pinned.sort(byName);
-        unpinned.sort(byName);
-        filteredApps = pinned.concat(unpinned);
+        function byPriority(a, b) {
+            const aRunning = isAppRunning(a) ? 1 : 0;
+            const bRunning = isAppRunning(b) ? 1 : 0;
+            const aPinned = pinnedIds[a.id] ? 1 : 0;
+            const bPinned = pinnedIds[b.id] ? 1 : 0;
+            const aScore = aPinned * 2 + aRunning;
+            const bScore = bPinned * 2 + bRunning;
+            if (aScore !== bScore) return bScore - aScore;
+            return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+        }
+        list.sort(byPriority);
+        if (!sameAppList(filteredApps, list)) filteredApps = list;
     }
 
-    onAllAppsChanged: buildFilteredList()
-    onPinnedIdsChanged: buildFilteredList()
+    onAllAppsChanged: if (pinnedIdsLoaded) buildFilteredList()
+    onPinnedIdsChanged: if (appsLoaded) buildFilteredList()
+    onRunningSetChanged: if (pinnedIdsLoaded && appsLoaded) buildFilteredList()
 
     Process {
         id: pinnedLoadProcess
@@ -163,39 +226,57 @@ PanelWindow {
                     const id = lines[i].trim();
                     if (id !== "") ids[id] = true;
                 }
-                launcher.pinnedIds = ids;
+                launcher.pinnedIdsLoaded = true;
+                if (!launcher.samePinnedIds(launcher.pinnedIds, ids)) {
+                    launcher.pinnedIds = ids;
+                } else if (launcher.appsLoaded) {
+                    launcher.buildFilteredList();
+                }
             }
         }
     }
 
     Connections {
         target: DesktopEntries
-
         function onApplicationsChanged() {
+            launcher.appsLoaded = false;
             if (launcher.visible) launcher.loadApps();
         }
     }
 
     Connections {
         target: HyprlandData
-
         function onWindowListChanged() {
             launcher.updateRunningSet();
         }
     }
 
+    Component.onCompleted: {
+        loadApps();
+        loadPinnedIds();
+        updateRunningSet();
+    }
+
     onVisibleChanged: {
         if (visible) {
             updateRunningSet();
-            loadPinnedIds();
-            loadApps();
-            searchField.text = "";
+            cardOffsetX = 0;
+            cardOffsetY = 0;
             Qt.callLater(function() {
                 searchField.forceActiveFocus();
                 if (Qt.inputMethod) Qt.inputMethod.show();
             });
         } else {
+            searchField.text = "";
             if (Qt.inputMethod) Qt.inputMethod.hide();
+        }
+    }
+
+    GlobalShortcut {
+        name: "appLauncherToggle"
+        description: "Toggle app launcher"
+        onPressed: {
+            GlobalStates.appLauncherOpen = !GlobalStates.appLauncherOpen;
         }
     }
 
@@ -204,334 +285,414 @@ PanelWindow {
         onClicked: GlobalStates.appLauncherOpen = false
     }
 
-        Rectangle {
-            id: card
-            anchors.centerIn: parent
-            width:  Math.min(parent.width  * 0.72, 960)
-            height: Math.min(parent.height * 0.80, 720)
-            color: "#0d0d0f"
-            radius: 16
-            border.color: "#22ffffff"
-            border.width: 1
+    Rectangle {
+        id: card
+        x: (parent.width - width) / 2 + launcher.cardOffsetX
+        y: (parent.height - height) / 2 + launcher.cardOffsetY
+        width: Math.min(parent.width * 0.72, 960)
+        height: Math.min(parent.height * 0.80, 720)
+        color: Appearance.tiling.bg
+        radius: 6
+        border.color: Appearance.tiling.border
+        border.width: Appearance.tiling.borderWidth
+        clip: true
 
-            MouseArea { anchors.fill: parent; onClicked: {} }
+        MouseArea { anchors.fill: parent; onClicked: {} }
 
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 24
-                spacing: 16
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 0
+
+            // ─── Titlebar ───
+            Rectangle {
+                id: titlebar
+                Layout.fillWidth: true
+                implicitHeight: Appearance.tiling.titlebarHeight
+                color: Appearance.tiling.bg
+                border.width: 0
+
+                MouseArea {
+                    anchors.fill: parent
+                    property real pressX: 0
+                    property real pressY: 0
+                    onPressed: (mouse) => {
+                        pressX = mouse.x
+                        pressY = mouse.y
+                    }
+                    onPositionChanged: (mouse) => {
+                        if (pressed) {
+                            launcher.cardOffsetX += mouse.x - pressX
+                            launcher.cardOffsetY += mouse.y - pressY
+                        }
+                    }
+                    cursorShape: Qt.SizeAllCursor
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 6
+                    spacing: 6
+
+                    MaterialSymbol {
+                        text: "apps"
+                        iconSize: Appearance.font.pixelSize.small
+                        color: Appearance.tiling.textBright
+                    }
+
+                    StyledText {
+                        text: "App Launcher"
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.family: Appearance.font.family.monospace
+                        color: Appearance.tiling.textBright
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    StyledText {
+                        text: launcher.filteredApps.length + " apps"
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        font.family: Appearance.font.family.monospace
+                        color: Appearance.tiling.textBright
+                    }
+                }
 
                 Rectangle {
-                    Layout.fillWidth: true
-                    height: 44
-                    radius: 10
-                    color: "#18ffffff"
-                    border.color: searchField.activeFocus ? "#3b82f6" : "#22ffffff"
-                    border.width: 1
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: Appearance.tiling.borderWidth
+                    color: Appearance.tiling.border
+                }
+            }
 
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
+            // ─── Search bar ───
+            Rectangle {
+                Layout.preferredWidth: 280
+                Layout.preferredHeight: 34
+                Layout.topMargin: 8
+                Layout.bottomMargin: 8
+                Layout.alignment: Qt.AlignHCenter
+                color: Appearance.tiling.bgInput
+                radius: 20
+                border.width: searchField.activeFocus ? 1 : Appearance.tiling.borderWidth
+                border.color: searchField.activeFocus ? Appearance.tiling.borderFocus : Appearance.tiling.border
 
-                    Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 10
-                        spacing: 10
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 8
+                    anchors.rightMargin: 8
+                    spacing: 6
 
-                        MaterialSymbol {
+                    MaterialSymbol {
+                        text: "search"
+                        iconSize: Appearance.font.pixelSize.small
+                        color: Appearance.tiling.textDim
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        StyledText {
+                            anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "search"
-                            iconSize: 16
-                            color: "#70ffffff"
+                            visible: searchField.text === ""
+                            text: "Type to search..."
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                            font.family: Appearance.font.family.monospace
+                            color: Appearance.tiling.textDim
                         }
 
-                        Item {
-                            width: parent.width - 40
-                            height: parent.height
-
-                            Text {
-                                anchors.fill: parent
-                                anchors.leftMargin: 0
-                                verticalAlignment: Text.AlignVCenter
-                                visible: searchField.text === ""
-                                text: "Type to search apps\u2026"
-                                color: "#44ffffff"
-                                font.family: launcher.fontStack
-                                font.pixelSize: 14
-                            }
-
-                            TextField {
-                                id: searchField
-                                anchors.fill: parent
-                                color: "#f0f0f5"
-                                selectionColor: "#3b82f6"
-                                selectedTextColor: "#ffffff"
-                                font.family: launcher.fontStack
-                                font.pixelSize: 14
-                                verticalAlignment: TextInput.AlignVCenter
-                                background: null
-                                padding: 0
-                                renderType: Text.NativeRendering
-                                onTextChanged: launcher.buildFilteredList()
-                                Keys.onEscapePressed: GlobalStates.appLauncherOpen = false
-                                Keys.onReturnPressed: {
-                                    if (launcher.filteredApps.length > 0) {
-                                        launcher.filteredApps[0].execute();
-                                        GlobalStates.appLauncherOpen = false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Text {
-                    visible: {
-                        for (const k in launcher.pinnedIds) { if (launcher.pinnedIds[k]) return true; }
-                        return false;
-                    }
-                    text: "  Pinned"
-                    color: "#60ffffff"
-                    font.family: launcher.fontStack
-                    font.pixelSize: 11
-                    Layout.leftMargin: 6
-                    Layout.rightMargin: 22
-                    Layout.fillWidth: true
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
-
-                    GridView {
-                        id: grid
-                        anchors.fill: parent
-                        anchors.leftMargin: 6
-                        anchors.rightMargin: 22
-
-                        cellWidth:  110
-                        cellHeight: 120
-                        model: launcher.filteredApps
-                        clip: true
-
-                        boundsBehavior: Flickable.StopAtBounds
-                        boundsMovement: Flickable.StopAtBounds
-                        flickDeceleration: 2800
-                        maximumFlickVelocity: 5200
-                        reuseItems: true
-
-                        delegate: Item {
-                            id: appItem
-                            width:  grid.cellWidth
-                            height: grid.cellHeight
-
-                            required property var modelData
-                            required property int index
-
-                            property bool isPinned: !!launcher.pinnedIds[modelData.id]
-                            property bool isRunning: launcher.isAppRunning(modelData)
-
-                            Rectangle {
-                                anchors.fill: parent
-                                anchors.margins: 5
-                                radius: 12
-                                color: ma.containsMouse ? "#16ffffff" : "transparent"
-                                border.color: ma.containsMouse ? "#10ffffff" : "transparent"
-                                border.width: 1
-                                Behavior on color { ColorAnimation { duration: 100 } }
-                                Behavior on border.color { ColorAnimation { duration: 100 } }
-                            }
-
-                            Rectangle {
-                                id: pinBadge
-                                visible: ma.containsMouse || appItem.isPinned
-                                anchors.top: parent.top
-                                anchors.right: parent.right
-                                anchors.topMargin: 6
-                                anchors.rightMargin: 6
-                                width: 24; height: 24
-                                radius: 12
-                                color: appItem.isPinned ? "#3b82f6" : "#40000000"
-                                border.color: "#60ffffff"
-                                border.width: 1
-                                z: 2
-
-                                Behavior on color { ColorAnimation { duration: 100 } }
-                                Behavior on visible { NumberAnimation { property: "opacity"; duration: 80 } }
-
-                                MaterialSymbol {
-                                    anchors.centerIn: parent
-                                    fill: appItem.isPinned ? 1 : 0
-                                    text: "keep"
-                                    iconSize: 13
-                                    color: "#ffffff"
-                                }
-                            }
-
-                            Item {
-                                id: iconWrapper
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.top: parent.top
-                                anchors.topMargin: 16
-                                width: 54; height: 54
-
-                                IconImage {
-                                    id: appIcon
-                                    anchors.fill: parent
-                                    source: launcher.iconSource(appItem.modelData.icon)
-                                    implicitSize: 54
-                                    asynchronous: true
-                                    mipmap: true
-                                }
-
-                                Rectangle {
-                                    visible: appIcon.status === Image.Null || appIcon.status === Image.Error
-                                    anchors.fill: parent
-                                    radius: 13
-                                    color: "#1e3a5f"
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: appItem.modelData.name.charAt(0).toUpperCase()
-                                        font.family: launcher.fontStack
-                                        font.pixelSize: 22
-                                        font.weight: Font.Bold
-                                        color: "#93c5fd"
-                                    }
-                                }
-                            }
-
-                            // Running indicator: small yellow dot centered under the icon.
-                            Rectangle {
-                                visible: appItem.isRunning
-                                anchors.top: iconWrapper.bottom
-                                anchors.topMargin: 4
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: 8; height: 8
-                                radius: 4
-                                color: "#ffc23a"
-                                border.color: "#803a2400"
-                                border.width: 1
-                                z: 1
-                            }
-
-                            Text {
-                                id: appLabel
-                                anchors.top: iconWrapper.bottom
-                                anchors.topMargin: 18
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.leftMargin: 8
-                                anchors.rightMargin: 8
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                maximumLineCount: 2
-                                elide: Text.ElideRight
-                                text: appItem.modelData.name
-                                font.family: launcher.fontStack
-                                font.pixelSize: 11
-                                color: ma.containsMouse ? "#ffffff" : "#dde0ec"
-                                lineHeight: 1.2
-                                Behavior on color { ColorAnimation { duration: 100 } }
-                            }
-
-                            // Single MouseArea for the entire cell. Badge click is detected by
-                            // mapping the click position into the badge's coordinate system, so the
-                            // badge never steals hover and ma.containsMouse stays stable.
-                            MouseArea {
-                                id: ma
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                z: 1
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: (mouse) => {
-                                    const localPinPos = mapToItem(pinBadge, mouse.x, mouse.y);
-                                    if (localPinPos.x >= 0 && localPinPos.x <= pinBadge.width &&
-                                        localPinPos.y >= 0 && localPinPos.y <= pinBadge.height) {
-                                        launcher.togglePinned(appItem.modelData.id);
-                                        return;
-                                    }
-                                    appItem.modelData.execute();
+                        TextField {
+                            id: searchField
+                            anchors.fill: parent
+                            color: Appearance.tiling.textBright
+                            selectionColor: Appearance.tiling.accent
+                            selectedTextColor: Appearance.tiling.bg
+                            font.family: Appearance.font.family.monospace
+                            font.pixelSize: Appearance.font.pixelSize.normal
+                            verticalAlignment: TextInput.AlignVCenter
+                            background: null
+                            padding: 0
+                            renderType: Text.NativeRendering
+                            onTextChanged: launcher.buildFilteredList()
+                            Keys.onEscapePressed: GlobalStates.appLauncherOpen = false
+                            Keys.onReturnPressed: {
+                                if (launcher.filteredApps.length > 0) {
+                                    launcher.launchApp(launcher.filteredApps[0]);
                                     GlobalStates.appLauncherOpen = false;
                                 }
                             }
                         }
                     }
+                }
+            }
 
-                    Rectangle {
-                        id: scrollTrack
-                        readonly property int columnCount: Math.max(1, Math.floor(grid.width / grid.cellWidth))
-                        readonly property int rowCount: Math.ceil(launcher.filteredApps.length / columnCount)
-                        readonly property real calculatedContentHeight: Math.max(grid.height, rowCount * grid.cellHeight)
-                        readonly property real scrollableHeight: Math.max(0, calculatedContentHeight - grid.height)
-                        readonly property real thumbRange: Math.max(0, height - scrollThumb.height)
-                        readonly property real thumbHeight: Math.min(height, Math.max(36, height * grid.height / calculatedContentHeight))
+            // ─── App grid ───
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
+                clip: true
 
-                        visible: scrollableHeight > 1
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                        anchors.rightMargin: 4
-                        width: 8
-                        radius: 4
-                        color: "#16ffffff"
+                GridView {
+                    id: grid
+                    anchors.fill: parent
+                    anchors.leftMargin: 2
+                    anchors.rightMargin: 10
 
-                        MouseArea {
+                    cellWidth: 100
+                    cellHeight: 104
+                    model: launcher.filteredApps
+                    clip: true
+
+                    boundsBehavior: Flickable.StopAtBounds
+                    boundsMovement: Flickable.StopAtBounds
+                    flickDeceleration: 2800
+                    maximumFlickVelocity: 5200
+                    reuseItems: true
+
+                    delegate: Item {
+                        id: appItem
+                        width: grid.cellWidth
+                        height: grid.cellHeight
+
+                        required property var modelData
+                        required property int index
+
+                        property bool isPinned: modelData && !!launcher.pinnedIds[modelData.id]
+                        property bool isRunning: modelData && launcher.isAppRunning(modelData)
+                        property string resolvedIconSource: modelData ? launcher.iconSource(appItem.modelData.icon) : ""
+
+                        Rectangle {
                             anchors.fill: parent
-                            onClicked: (mouse) => {
-                                const target = Math.max(0, mouse.y - scrollThumb.height / 2);
-                                grid.contentY = Math.max(0, Math.min(1, target / Math.max(1, scrollTrack.thumbRange))) * scrollTrack.scrollableHeight;
+                            anchors.margins: 2
+                            radius: 6
+                            color: ma.containsMouse ? Appearance.tiling.bgHover : "transparent"
+                            border.width: ma.containsMouse ? Appearance.tiling.borderWidth : 0
+                            border.color: ma.containsMouse ? Appearance.tiling.border : "transparent"
+                        }
+
+                        // Pin badge
+                        Rectangle {
+                            id: pinBadge
+                            visible: ma.containsMouse || appItem.isPinned
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.topMargin: 3
+                            anchors.rightMargin: 3
+                            width: 18; height: 18
+                            radius: 9
+                            color: appItem.isPinned ? Appearance.tiling.accent : Appearance.tiling.bgActive
+                            border.color: appItem.isPinned ? Appearance.tiling.borderFocus : Appearance.tiling.border
+                            border.width: Appearance.tiling.borderWidth
+                            z: 2
+
+                            MaterialSymbol {
+                                anchors.centerIn: parent
+                                fill: appItem.isPinned ? 1 : 0
+                                text: "keep"
+                                iconSize: 11
+                                color: appItem.isPinned ? Appearance.tiling.textBright : Appearance.tiling.textDim
                             }
                         }
 
-                        Rectangle {
-                            id: scrollThumb
-                            width: 6
-                            x: 1
-                            height: scrollTrack.thumbHeight
-                            radius: 3
-                            color: thumbDrag.containsMouse || thumbDrag.pressed ? "#a8c7ff" : "#80ffffff"
+                        // Icon
+                        Item {
+                            id: iconWrapper
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: 12
+                            width: 48; height: 48
 
-                            property bool dragging: false
+                            // Fallback: only show when icon truly doesn't exist
+                            Rectangle {
+                                visible: appItem.resolvedIconSource === "" || appIcon.status === Image.Error
+                                anchors.fill: parent
+                                radius: 8
+                                color: Appearance.tiling.bgActive
+                                border.width: Appearance.tiling.borderWidth
+                                border.color: Appearance.tiling.border
 
-                            Binding {
-                                target: scrollThumb
-                                property: "y"
-                                when: !scrollThumb.dragging
-                                value: scrollTrack.scrollableHeight > 0
-                                    ? Math.max(0, Math.min(1, grid.contentY / scrollTrack.scrollableHeight)) * scrollTrack.thumbRange
-                                    : 0
+                                StyledText {
+                                    anchors.centerIn: parent
+                                    text: (appItem.modelData && appItem.modelData.name) ? appItem.modelData.name.charAt(0).toUpperCase() : "?"
+                                    font.pixelSize: Appearance.font.pixelSize.large
+                                    font.family: Appearance.font.family.monospace
+                                    font.weight: Font.Bold
+                                    color: Appearance.tiling.accentBright
+                                }
                             }
 
-                            MouseArea {
-                                id: thumbDrag
+                            IconImage {
+                                id: appIcon
                                 anchors.fill: parent
-                                hoverEnabled: true
-                                drag.target: scrollThumb
-                                drag.axis: Drag.YAxis
-                                drag.minimumY: 0
-                                drag.maximumY: scrollTrack.thumbRange
+                                source: appItem.resolvedIconSource
+                                implicitSize: 48
+                                asynchronous: false
+                                mipmap: true
+                            }
+                        }
 
-                                onPressed: scrollThumb.dragging = true
-                                onReleased: scrollThumb.dragging = false
-                                onCanceled: scrollThumb.dragging = false
-                                onPositionChanged: {
-                                    if (!pressed) return;
-                                    grid.contentY = Math.max(0, Math.min(1, scrollThumb.y / Math.max(1, scrollTrack.thumbRange))) * scrollTrack.scrollableHeight;
+                        // Running indicator
+                        Rectangle {
+                            visible: appItem.isRunning
+                            anchors.top: iconWrapper.bottom
+                            anchors.topMargin: 3
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: 8; height: 8
+                            radius: 4
+                            color: "#ffc23a"
+                            border.color: "#803a2400"
+                            border.width: 1
+                            z: 1
+                        }
+
+                        // Label
+                        StyledText {
+                            id: appLabel
+                            anchors.top: iconWrapper.bottom
+                            anchors.topMargin: 14
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: 4
+                            anchors.rightMargin: 4
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                            text: appItem.modelData ? appItem.modelData.name : ""
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            font.family: Appearance.font.family.monospace
+                            color: ma.containsMouse ? Appearance.tiling.textBright : Appearance.tiling.text
+                            lineHeight: 1.1
+                        }
+
+                        MouseArea {
+                            id: ma
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            z: 1
+                            cursorShape: Qt.PointingHandCursor
+                            onContainsMouseChanged: {
+                                if (containsMouse) {
+                                    launcher.focusedAppDescription = appItem.modelData.comment || appItem.modelData.genericName || ""
+                                } else if (launcher.focusedAppDescription === (appItem.modelData.comment || appItem.modelData.genericName || "")) {
+                                    launcher.focusedAppDescription = ""
                                 }
+                            }
+                            onClicked: (mouse) => {
+                                const localPinPos = mapToItem(pinBadge, mouse.x, mouse.y);
+                                if (localPinPos.x >= 0 && localPinPos.x <= pinBadge.width &&
+                                    localPinPos.y >= 0 && localPinPos.y <= pinBadge.height) {
+                                    launcher.togglePinned(appItem.modelData.id);
+                                    return;
+                                }
+                                launcher.launchApp(appItem.modelData);
+                                GlobalStates.appLauncherOpen = false;
                             }
                         }
                     }
                 }
 
-                Text {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: launcher.filteredApps.length + " apps"
-                    color: "#38ffffff"
-                    font.family: launcher.fontStack
-                    font.pixelSize: 10
+                // Scrollbar
+                Rectangle {
+                    id: scrollTrack
+                    readonly property int columnCount: Math.max(1, Math.floor(grid.width / grid.cellWidth))
+                    readonly property int rowCount: Math.ceil(launcher.filteredApps.length / columnCount)
+                    readonly property real calculatedContentHeight: Math.max(grid.height, rowCount * grid.cellHeight)
+                    readonly property real scrollableHeight: Math.max(0, calculatedContentHeight - grid.height)
+                    readonly property real thumbHeight: Math.min(height, Math.max(36, height * grid.height / calculatedContentHeight))
+                    readonly property real thumbRange: Math.max(0, height - thumbHeight)
+
+                    visible: scrollableHeight > 1
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    width: 8
+                    radius: 4
+                    color: Appearance.tiling.bgInput
+                    border.width: Appearance.tiling.borderWidth
+                    border.color: Appearance.tiling.border
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: (mouse) => {
+                            const target = Math.max(0, mouse.y - scrollTrack.thumbHeight / 2);
+                            grid.contentY = Math.max(0, Math.min(1, target / Math.max(1, scrollTrack.thumbRange))) * scrollTrack.scrollableHeight;
+                        }
+                    }
+
+                    Rectangle {
+                        id: scrollThumb
+                        width: parent.width - 2
+                        x: 1
+                        height: scrollTrack.thumbHeight
+                        radius: 3
+                        color: thumbDrag.containsMouse || thumbDrag.pressed ? Appearance.tiling.accent : Appearance.tiling.textDim
+
+                        property bool dragging: false
+
+                        Binding on y {
+                            when: !scrollThumb.dragging
+                            value: scrollTrack.scrollableHeight > 0
+                                ? Math.max(0, Math.min(1, grid.contentY / scrollTrack.scrollableHeight)) * scrollTrack.thumbRange
+                                : 0
+                        }
+
+                        MouseArea {
+                            id: thumbDrag
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            drag.target: scrollThumb
+                            drag.axis: Drag.YAxis
+                            drag.minimumY: 0
+                            drag.maximumY: scrollTrack.thumbRange
+
+                            onPressed: scrollThumb.dragging = true
+                            onReleased: scrollThumb.dragging = false
+                            onCanceled: scrollThumb.dragging = false
+                            onPositionChanged: {
+                                if (!pressed) return;
+                                grid.contentY = Math.max(0, Math.min(1, scrollThumb.y / Math.max(1, scrollTrack.thumbRange))) * scrollTrack.scrollableHeight;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ─── Status bar ───
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 22
+                color: Appearance.tiling.bg
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: Appearance.tiling.borderWidth
+                    color: Appearance.tiling.border
+                }
+
+                StyledText {
+                    anchors.centerIn: parent
+                    text: launcher.focusedAppDescription || launcher.filteredApps.length + " apps"
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                    font.family: Appearance.font.family.monospace
+                    color: Appearance.tiling.textBright
+                    elide: Text.ElideRight
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 8
+                    anchors.rightMargin: 8
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
         }
+    }
 
     IpcHandler {
         target: "appLauncher"
