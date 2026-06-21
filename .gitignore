@@ -1,0 +1,10 @@
+# Quickshell runtime state
+ii/.state/
+
+# Python venv (if any)
+.venv/
+
+# Editor/IDE
+*.swp
+*.swo
+*~
