@@ -1,7 +1,5 @@
 import qs.modules.common
-import qs.modules.common.functions
 import qs.modules.common.widgets
-import qs.services
 import QtQuick
 import Quickshell.Services.Notifications
 
@@ -11,17 +9,22 @@ Item {
     property string urgency
     property bool hovered: hoverArea.containsMouse
     property bool pressed: hoverArea.pressed
+    readonly property bool critical: urgency == NotificationUrgency.Critical
     signal clicked()
 
-    implicitWidth: label.implicitWidth + 16
+    implicitWidth: label.implicitWidth + 18
     implicitHeight: 24
 
     Rectangle {
         anchors.fill: parent
-        color: button.pressed ? (urgency == NotificationUrgency.Critical ? Appearance.tiling.error : Appearance.tiling.text) :
-               button.hovered ? (urgency == NotificationUrgency.Critical ? Appearance.tiling.borderCritical : Appearance.tiling.bgHover) :
-               "transparent"
-        Behavior on color { ColorAnimation { duration: 80 } }
+        radius: 0
+        color: button.pressed ? (button.critical ? Appearance.tiling.borderCritical : Appearance.tiling.bgActive)
+            : button.hovered ? Appearance.tiling.bgHover
+            : "transparent"
+        border.width: Appearance.tiling.borderWidth
+        border.color: button.critical ? Appearance.tiling.borderCritical
+            : button.hovered ? Appearance.tiling.borderFocus
+            : Appearance.tiling.border
     }
 
     StyledText {
@@ -31,9 +34,9 @@ Item {
         font.family: Appearance.font.family.monospace
         font.pixelSize: Appearance.font.pixelSize.small
         text: button.buttonText
-        color: button.pressed ? Appearance.tiling.bg :
-               (urgency == NotificationUrgency.Critical) ? Appearance.tiling.error : Appearance.tiling.text
-        Behavior on color { ColorAnimation { duration: 80 } }
+        color: button.critical ? Appearance.tiling.error
+            : button.pressed ? Appearance.tiling.textBright
+            : Appearance.tiling.text
     }
 
     MouseArea {

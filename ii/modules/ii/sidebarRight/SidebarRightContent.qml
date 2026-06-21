@@ -6,7 +6,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import qs.modules.ii.sidebarRight.quickToggles.classicStyle
 
 Item {
     id: root
@@ -22,9 +21,9 @@ Item {
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        color: "#111111"
-        border.width: 1
-        border.color: "#4c7899"
+        color: Appearance.tiling.bg
+        border.width: Appearance.tiling.borderWidth
+        border.color: Appearance.tiling.borderFocus
         radius: 0
 
         ColumnLayout {
@@ -35,7 +34,6 @@ Item {
             SystemButtonRow {
                 Layout.fillHeight: false
                 Layout.fillWidth: true
-                Layout.topMargin: 5
                 Layout.bottomMargin: 0
             }
 
@@ -48,50 +46,63 @@ Item {
     }
 
     component SystemButtonRow: Item {
-        implicitHeight: systemButtonsRow.implicitHeight
+        implicitHeight: commandBar.implicitHeight
 
-        ButtonGroup {
-            id: systemButtonsRow
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                right: parent.right
-                left: parent.left
-            }
-            color: Appearance.colors.colLayer1
-            padding: 0
-            spacing: 4
+        Rectangle {
+            id: commandBar
+            anchors.fill: parent
+            implicitHeight: Appearance.tiling.titlebarHeight + 2
+            radius: 0
+            color: Appearance.tiling.bg
+            border.width: Appearance.tiling.borderWidth
+            border.color: Appearance.tiling.border
 
-            QuickToggleButton {
-                toggled: false
-                buttonIcon: "restart_alt"
-                onClicked: {
-                    Quickshell.execDetached(["hyprctl", "reload"])
-                    Quickshell.reload(true);
+            RowLayout {
+                anchors {
+                    fill: parent
+                    leftMargin: 8
+                    rightMargin: 4
                 }
-                StyledToolTip {
-                    text: Translation.tr("Reload Hyprland & Quickshell")
+                spacing: 4
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: "system"
+                    font.family: Appearance.font.family.monospace
+                    font.pixelSize: Appearance.font.pixelSize.small
+                    color: Appearance.tiling.textDim
                 }
-            }
-            QuickToggleButton {
-                toggled: false
-                buttonIcon: "settings"
-                onClicked: {
-                    GlobalStates.sidebarRightOpen = false;
-                    Quickshell.execDetached(["qs", "-p", root.settingsQmlPath]);
+
+                TuiPanelButton {
+                    buttonIcon: "restart_alt"
+                    onClicked: {
+                        Quickshell.execDetached(["hyprctl", "reload"])
+                        Quickshell.reload(true);
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Reload Hyprland & Quickshell")
+                    }
                 }
-                StyledToolTip {
-                    text: Translation.tr("Settings")
+
+                TuiPanelButton {
+                    buttonIcon: "settings"
+                    onClicked: {
+                        GlobalStates.sidebarRightOpen = false;
+                        Quickshell.execDetached(["qs", "-p", root.settingsQmlPath]);
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Settings")
+                    }
                 }
-            }
-            QuickToggleButton {
-                toggled: false
-                buttonIcon: "power_settings_new"
-                onClicked: {
-                    GlobalStates.sessionOpen = true;
-                }
-                StyledToolTip {
-                    text: Translation.tr("Session")
+
+                TuiPanelButton {
+                    buttonIcon: "power_settings_new"
+                    onClicked: {
+                        GlobalStates.sessionOpen = true;
+                    }
+                    StyledToolTip {
+                        text: Translation.tr("Session")
+                    }
                 }
             }
         }

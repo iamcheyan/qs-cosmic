@@ -1,7 +1,6 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -18,54 +17,78 @@ Item {
         anchors.bottomMargin: 6
 
         clip: true
-        layer.enabled: false
-        layer.effect: OpacityMask {
-            maskSource: Rectangle {
-                width: listview.width
-                height: listview.height
-                radius: 0
-            }
-        }
 
         popup: false
     }
 
-    // Placeholder when list is empty
-    PagePlaceholder {
-        shown: Notifications.list.length === 0
-        icon: "notifications_active"
-        description: Translation.tr("Nothing")
-        shape: MaterialShape.Shape.Ghostish
-        descriptionHorizontalAlignment: Text.AlignHCenter
+    Rectangle {
+        anchors.centerIn: listview
+        visible: Notifications.list.length === 0
+        implicitWidth: emptyText.implicitWidth + 18
+        implicitHeight: 28
+        radius: 0
+        color: Appearance.tiling.bg
+        border.width: Appearance.tiling.borderWidth
+        border.color: Appearance.tiling.border
+
+        StyledText {
+            id: emptyText
+            anchors.centerIn: parent
+            text: "no notifications"
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: Appearance.tiling.textDim
+        }
     }
 
-    ButtonGroup {
+    Rectangle {
         id: statusRow
         anchors {
             left: parent.left
             right: parent.right
             bottom: parent.bottom
         }
-        spacing: 6
+        implicitHeight: statusLayout.implicitHeight
+        radius: 0
+        color: "transparent"
 
-        NotificationStatusButton {
-            Layout.fillWidth: false
-            buttonIcon: "notifications_paused"
-            toggled: Notifications.silent
-            onClicked: () => {
-                Notifications.silent = !Notifications.silent;
+        RowLayout {
+            id: statusLayout
+            anchors.fill: parent
+            spacing: 4
+
+            NotificationStatusButton {
+                Layout.fillWidth: false
+                buttonIcon: "notifications_paused"
+                toggled: Notifications.silent
+                onClicked: () => {
+                    Notifications.silent = !Notifications.silent;
+                }
             }
-        }
-        NotificationStatusButton {
-            enabled: false
-            Layout.fillWidth: true
-            buttonText: Translation.tr("%1 notifications").arg(Notifications.list.length)
-        }
-        NotificationStatusButton {
-            Layout.fillWidth: false
-            buttonIcon: "delete_sweep"
-            onClicked: () => {
-                Notifications.discardAllNotifications()
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 28
+                radius: 0
+                color: Appearance.tiling.bg
+                border.width: Appearance.tiling.borderWidth
+                border.color: Appearance.tiling.border
+
+                StyledText {
+                    anchors.centerIn: parent
+                    text: Translation.tr("%1 notifications").arg(Notifications.list.length)
+                    font.family: Appearance.font.family.monospace
+                    font.pixelSize: Appearance.font.pixelSize.small
+                    color: Appearance.tiling.textDim
+                }
+            }
+
+            NotificationStatusButton {
+                Layout.fillWidth: false
+                buttonIcon: "delete_sweep"
+                onClicked: () => {
+                    Notifications.discardAllNotifications()
+                }
             }
         }
     }
