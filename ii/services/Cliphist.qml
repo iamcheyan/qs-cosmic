@@ -69,7 +69,6 @@ Singleton {
 
     Process {
         id: precacheProc
-        property var command: []
     }
 
     function copy(entry) {

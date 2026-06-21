@@ -12,7 +12,6 @@ WindowDialog {
     backgroundWidth: 380
     anchorPosition: 1
     anchorMargin: 8
-    focus: true
 
     property int keyboardIndex: 0
     property int currentPage: 0
@@ -90,29 +89,6 @@ WindowDialog {
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.NoButton
-        onWheel: (event) => {
-            if (event.angleDelta.y > 0) {
-                if (keyboardIndex > 0) {
-                    keyboardIndex--;
-                } else {
-                    prevPage();
-                    keyboardIndex = Math.min(clipboardModel.count - 1, itemsPerPage - 1);
-                }
-            } else if (event.angleDelta.y < 0) {
-                if (keyboardIndex < clipboardModel.count - 1) {
-                    keyboardIndex++;
-                } else {
-                    nextPage();
-                    keyboardIndex = 0;
-                }
-            }
-            event.accepted = true;
-        }
-    }
-
     ListView {
         id: clipboardList
         Layout.fillHeight: true
@@ -144,6 +120,29 @@ WindowDialog {
                 if (hovered) {
                     root.keyboardIndex = index;
                 }
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
+            onWheel: (event) => {
+                if (event.angleDelta.y > 0) {
+                    if (root.keyboardIndex > 0) {
+                        root.keyboardIndex--;
+                    } else {
+                        root.prevPage();
+                        root.keyboardIndex = Math.min(clipboardModel.count - 1, root.itemsPerPage - 1);
+                    }
+                } else if (event.angleDelta.y < 0) {
+                    if (root.keyboardIndex < clipboardModel.count - 1) {
+                        root.keyboardIndex++;
+                    } else {
+                        root.nextPage();
+                        root.keyboardIndex = 0;
+                    }
+                }
+                event.accepted = true;
             }
         }
     }
