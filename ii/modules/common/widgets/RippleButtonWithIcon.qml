@@ -13,14 +13,21 @@ RippleButton {
         StyledText {
             visible: text !== ""
             text: buttonWithIconRoot.mainText
+            font.family: Appearance.font.family.monospace
             font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.colors.colOnSecondaryContainer
+            color: Appearance.tiling.text
         }
     }
     implicitHeight: 35
     horizontalPadding: 10
-    buttonRadius: Appearance.rounding.small
-    colBackground: Appearance.colors.colLayer2
+    buttonRadius: 0
+    buttonRadiusPressed: 0
+    rippleEnabled: false
+    colBackground: Appearance.tiling.bg
+    colBackgroundHover: Appearance.tiling.bgHover
+    colRipple: Appearance.tiling.bgActive
+    borderWidth: Appearance.tiling.borderWidth
+    borderColor: Appearance.tiling.border
 
     contentItem: RowLayout {
         Item {
@@ -33,7 +40,7 @@ RippleButton {
                 sourceComponent: MaterialSymbol {
                     text: buttonWithIconRoot.materialIcon
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: Appearance.tiling.text
                     fill: buttonWithIconRoot.materialIconFill ? 1 : 0
                 }
             }
@@ -45,7 +52,7 @@ RippleButton {
                     text: buttonWithIconRoot.nerdIcon
                     font.pixelSize: Appearance.font.pixelSize.larger
                     font.family: Appearance.font.family.iconNerd
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: Appearance.tiling.text
                 }
             }
         }

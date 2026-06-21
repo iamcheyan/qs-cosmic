@@ -10,10 +10,15 @@ ColumnLayout {
     default property alias contentData: sectionContent.data
 
     Layout.fillWidth: true
-    Layout.topMargin: 4
-    spacing: 2
+    Layout.topMargin: 0
+    spacing: 0
 
     RowLayout {
+        Layout.fillWidth: true
+        Layout.leftMargin: 8
+        Layout.rightMargin: 8
+        Layout.topMargin: root.title.length > 0 ? 6 : 0
+        Layout.bottomMargin: root.title.length > 0 ? 2 : 0
         ContentSubsectionLabel {
             visible: root.title && root.title.length > 0
             text: root.title
@@ -23,7 +28,7 @@ ColumnLayout {
             text: "info"
             iconSize: Appearance.font.pixelSize.large
             
-            color: Appearance.colors.colSubtext
+            color: Appearance.tiling.textDim
             MouseArea {
                 id: infoMouseArea
                 anchors.fill: parent
@@ -41,6 +46,6 @@ ColumnLayout {
     ColumnLayout {
         id: sectionContent
         Layout.fillWidth: true
-        spacing: 2
+        spacing: 0
     }
 }

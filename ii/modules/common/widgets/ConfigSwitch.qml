@@ -1,43 +1,70 @@
-import qs.modules.common.widgets
 import qs.modules.common
+import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 
-RippleButton {
+Item {
     id: root
     property string buttonIcon
-    property alias iconSize: iconWidget.iconSize
+    property string text: ""
+    property bool checked: false
+    property bool hovered: hoverArea.containsMouse
+    property alias iconSize: iconWidget.font.pixelSize
 
     Layout.fillWidth: true
-    implicitHeight: contentItem.implicitHeight + 8 * 2
-    font.pixelSize: Appearance.font.pixelSize.small
-    
-    onClicked: checked = !checked
+    implicitHeight: Math.max(contentRow.implicitHeight + 12, 30)
+    opacity: root.enabled ? 1 : 0.45
 
-    contentItem: RowLayout {
-        spacing: 10
-        OptionalMaterialSymbol {
-            id: iconWidget
-            icon: root.buttonIcon
-            opacity: root.enabled ? 1 : 0.4
-            iconSize: Appearance.font.pixelSize.larger
+    Rectangle {
+        anchors.fill: parent
+        radius: 0
+        color: root.hovered ? Appearance.tiling.bgHover : "transparent"
+        border.width: root.hovered ? Appearance.tiling.borderWidth : 0
+        border.color: Appearance.tiling.border
+    }
+
+    RowLayout {
+        id: contentRow
+        anchors {
+            left: parent.left
+            right: parent.right
+            verticalCenter: parent.verticalCenter
+            leftMargin: 8
+            rightMargin: 8
         }
+        spacing: 8
+
         StyledText {
-            id: labelWidget
+            text: root.checked ? "[x]" : "[ ]"
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: root.checked ? Appearance.tiling.accentBright : Appearance.tiling.textDim
+        }
+
+        StyledText {
+            id: iconWidget
+            visible: root.buttonIcon && root.buttonIcon.length > 0
+            text: root.buttonIcon
+            font.family: Appearance.font.family.iconMaterial
+            font.pixelSize: Appearance.font.pixelSize.large
+            color: Appearance.tiling.textDim
+        }
+
+        StyledText {
             Layout.fillWidth: true
             text: root.text
-            font: root.font
-            color: Appearance.colors.colOnSecondaryContainer
-            opacity: root.enabled ? 1 : 0.4
-        }
-        StyledSwitch {
-            id: switchWidget
-            down: root.down
-            Layout.fillWidth: false
-            checked: root.checked
-            onClicked: root.clicked()
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: Appearance.tiling.text
+            elide: Text.ElideRight
         }
     }
-}
 
+    MouseArea {
+        id: hoverArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.checked = !root.checked
+    }
+}

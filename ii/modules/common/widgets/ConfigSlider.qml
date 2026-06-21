@@ -6,9 +6,11 @@ import qs.services
 
 RowLayout {
     id: root
-    spacing: 10
+    spacing: 8
     Layout.leftMargin: 8
     Layout.rightMargin: 8
+    Layout.topMargin: 3
+    Layout.bottomMargin: 3
 
     property string text: ""
     property string buttonIcon: ""
@@ -21,18 +23,21 @@ RowLayout {
 
     RowLayout {
         id: row
-        spacing: 10
+        spacing: 8
 
         OptionalMaterialSymbol {
             id: iconWidget
             icon: root.buttonIcon
             iconSize: Appearance.font.pixelSize.larger
+            color: Appearance.tiling.textDim
         }
         StyledText {
             id: labelWidget
             Layout.preferredWidth: root.textWidth
             text: root.text
-            color: Appearance.colors.colOnSecondaryContainer
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: Appearance.tiling.text
         }
     }
     

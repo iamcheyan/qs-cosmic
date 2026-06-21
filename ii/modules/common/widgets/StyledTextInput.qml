@@ -6,14 +6,13 @@ import QtQuick.Controls
  * Does not include visual layout, but includes the easily neglected colors.
  */
 TextInput {
-    color: Appearance.colors.colOnLayer1
+    color: Appearance.tiling.textBright
     renderType: Text.NativeRendering
-    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-    selectionColor: Appearance.colors.colSecondaryContainer
+    selectedTextColor: Appearance.tiling.bg
+    selectionColor: Appearance.tiling.accent
     font {
-        family: Appearance.font.family.main
+        family: Appearance.font.family.monospace
         pixelSize: Appearance?.font.pixelSize.small ?? 15
         hintingPreference: Font.PreferFullHinting
-        variableAxes: Appearance.font.variableAxes.main
     }
 }

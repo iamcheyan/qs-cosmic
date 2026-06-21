@@ -11,16 +11,23 @@ import qs.modules.common.widgets
 GroupButton {
     id: root
     horizontalPadding: 12
-    verticalPadding: 8
+    verticalPadding: 6
     bounce: false
     property string buttonIcon
     property bool leftmost: false
     property bool rightmost: false
-    leftRadius: (toggled || leftmost) ? (height / 2) : Appearance.rounding.unsharpenmore
-    rightRadius: (toggled || rightmost) ? (height / 2) : Appearance.rounding.unsharpenmore
-    colBackground: Appearance.colors.colSecondaryContainer
-    colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-    colBackgroundActive: Appearance.colors.colSecondaryContainerActive
+    buttonRadius: 0
+    buttonRadiusPressed: 0
+    leftRadius: 0
+    rightRadius: 0
+    colBackground: root.toggled ? Appearance.tiling.bgTitlebar : "transparent"
+    colBackgroundHover: Appearance.tiling.bgHover
+    colBackgroundActive: Appearance.tiling.bgActive
+    colBackgroundToggled: Appearance.tiling.bgTitlebar
+    colBackgroundToggledHover: Appearance.tiling.bgActive
+    colBackgroundToggledActive: Appearance.tiling.bgHover
+    borderWidth: Appearance.tiling.borderWidth
+    borderColor: root.toggled ? Appearance.tiling.borderFocus : Appearance.tiling.border
 
     contentItem: RowLayout {
         spacing: 4 * (root.buttonText?.length > 0)
@@ -36,7 +43,7 @@ GroupButton {
                     anchors.centerIn: parent
                     text: root.buttonIcon
                     iconSize: Appearance.font.pixelSize.larger
-                    color: root.toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondaryContainer
+                    color: root.toggled ? Appearance.tiling.textBright : Appearance.tiling.textDim
                 }
             }
         }
@@ -47,14 +54,16 @@ GroupButton {
 
             TextMetrics {
                 id: textMetrics
-                font.family: Appearance.font.family.main
+                font.family: Appearance.font.family.monospace
                 text: "Abc"
             }
 
             StyledText {
                 id: textItem
                 anchors.centerIn: parent
-                color: root.toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondaryContainer
+                font.family: Appearance.font.family.monospace
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: root.toggled ? Appearance.tiling.textBright : Appearance.tiling.text
                 text: root.buttonText
             }
         }

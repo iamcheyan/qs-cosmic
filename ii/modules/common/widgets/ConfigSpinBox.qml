@@ -11,21 +11,27 @@ RowLayout {
     property alias stepSize: spinBoxWidget.stepSize
     property alias from: spinBoxWidget.from
     property alias to: spinBoxWidget.to
-    spacing: 10
+    spacing: 8
     Layout.leftMargin: 8
     Layout.rightMargin: 8
+    Layout.topMargin: 3
+    Layout.bottomMargin: 3
 
     RowLayout {
-        spacing: 10
+        Layout.fillWidth: true
+        spacing: 8
         OptionalMaterialSymbol {
             icon: root.icon
             opacity: root.enabled ? 1 : 0.4
+            color: Appearance.tiling.textDim
         }
         StyledText {
             id: labelWidget
             Layout.fillWidth: true
             text: root.text
-            color: Appearance.colors.colOnSecondaryContainer
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: Appearance.tiling.text
             opacity: root.enabled ? 1 : 0.4
         }
     }

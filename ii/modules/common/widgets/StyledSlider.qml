@@ -8,9 +8,7 @@ import QtQuick.Layouts
 import Quickshell.Widgets
 
 /**
- * Material 3 slider. See https://m3.material.io/components/sliders/overview
- * It doesn't exactly match the spec because it does not make sense to have stuff on a computer that fucking huge.
- * Should be at 3/4 scale...
+ * Rectangular slider used by settings and shell controls.
  */
 
 Slider {
@@ -29,21 +27,17 @@ Slider {
 
     property var configuration: StyledSlider.Configuration.S
 
-    property real handleDefaultWidth: 3
-    property real handlePressedWidth: 1.5
-    property color highlightColor: Appearance.colors.colPrimary
-    property color trackColor: Appearance.colors.colSecondaryContainer
-    property color handleColor: Appearance.colors.colPrimary
-    property color dotColor: Appearance.m3colors.m3onSecondaryContainer
-    property color dotColorHighlighted: Appearance.m3colors.m3onPrimary
-    property real unsharpenRadius: Appearance.rounding.unsharpen
+    property real handleDefaultWidth: 8
+    property real handlePressedWidth: 10
+    property color highlightColor: Appearance.tiling.accent
+    property color trackColor: Appearance.tiling.bgInput
+    property color handleColor: Appearance.tiling.textBright
+    property color dotColor: Appearance.tiling.textDim
+    property color dotColorHighlighted: Appearance.tiling.bg
+    property real unsharpenRadius: 0
     property real trackWidth: configuration
-    property real trackRadius: trackWidth >= StyledSlider.Configuration.XL ? 21
-        : trackWidth >= StyledSlider.Configuration.L ? 12
-        : trackWidth >= StyledSlider.Configuration.M ? 9
-        : trackWidth >= StyledSlider.Configuration.S ? 6
-        : height / 2
-    property real handleHeight: (configuration === StyledSlider.Configuration.Wavy) ? 24 : Math.max(33, trackWidth + 9)
+    property real trackRadius: 0
+    property real handleHeight: Math.max(24, trackWidth + 8)
     property real handleWidth: root.pressed ? handlePressedWidth : handleDefaultWidth
     property real handleMargins: 4
     property real dividerMargins: 2
@@ -81,7 +75,7 @@ Slider {
         x: root.handleMargins + (normalizedValue * root.effectiveDraggingWidth) - (root.trackDotSize / 2)
         width: root.trackDotSize
         height: root.trackDotSize
-        radius: Appearance.rounding.full
+        radius: 0
         color: normalizedValue > root.visualPosition ? root.dotColor : root.dotColorHighlighted
 
         Behavior on color {
@@ -123,10 +117,7 @@ Slider {
                 active: !root.wavy
                 sourceComponent: Rectangle {
                     color: root.highlightColor
-                    topLeftRadius: index === 0 ? root.trackRadius : root.unsharpenRadius
-                    bottomLeftRadius: index === 0 ? root.trackRadius : root.unsharpenRadius
-                    topRightRadius: root.unsharpenRadius
-                    bottomRightRadius: root.unsharpenRadius
+                    radius: 0
                 }
             }
         }
@@ -179,10 +170,7 @@ Slider {
                 width: background.rightWidths[index] * root.effectiveDraggingWidth - leftMargin - rightMargin - (index === 0 ? handleWidth / 2 : 0) + (index === background.rightWidths.length - 1 ? rightPadding : 0)
                 height: trackWidth
                 color: root.trackColor
-                topRightRadius: index === background.rightWidths.length - 1 ? root.trackRadius : root.unsharpenRadius
-                bottomRightRadius: index === background.rightWidths.length - 1 ? root.trackRadius : root.unsharpenRadius
-                topLeftRadius: root.unsharpenRadius
-                bottomLeftRadius: root.unsharpenRadius
+                radius: 0
             }
         }
 
@@ -204,8 +192,10 @@ Slider {
         implicitHeight: root.handleHeight
         x: root.leftPadding + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2)
         anchors.verticalCenter: parent.verticalCenter
-        radius: Appearance.rounding.full
+        radius: 0
         color: root.handleColor
+        border.width: Appearance.tiling.borderWidth
+        border.color: Appearance.tiling.border
 
         Behavior on implicitWidth {
             animation: Appearance?.animation.elementMoveFast.numberAnimation.createObject(this)

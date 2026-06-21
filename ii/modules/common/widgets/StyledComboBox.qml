@@ -12,16 +12,18 @@ ComboBox {
 
     property string buttonIcon: ""
     property real buttonRadius: 0
-    property color colBackground: Appearance.colors.colSecondaryContainer
-    property color colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-    property color colBackgroundActive: Appearance.colors.colSecondaryContainerActive
+    property color colBackground: Appearance.tiling.bgInput
+    property color colBackgroundHover: Appearance.tiling.bgHover
+    property color colBackgroundActive: Appearance.tiling.bgActive
 
-    implicitHeight: 40
+    implicitHeight: 34
     Layout.fillWidth: true
 
     background: Rectangle {
         radius: root.buttonRadius
         color: (root.down && !root.popup.visible) ? root.colBackgroundActive : root.hovered ? root.colBackgroundHover : root.colBackground
+        border.width: Appearance.tiling.borderWidth
+        border.color: root.activeFocus || root.popup.visible ? Appearance.tiling.borderFocus : Appearance.tiling.border
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -39,7 +41,7 @@ ComboBox {
         y: root.height / 2 - height / 2
         text: "keyboard_arrow_down"
         iconSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnSecondaryContainer
+        color: Appearance.tiling.text
 
         rotation: root.popup.visible ? 180 : 0
         Behavior on rotation {
@@ -55,8 +57,8 @@ ComboBox {
             id: buttonLayout
             anchors.fill: parent
             spacing: 8
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
+            anchors.leftMargin: 10
+            anchors.rightMargin: 28
 
             Loader {
                 Layout.alignment: Qt.AlignVCenter
@@ -70,15 +72,17 @@ ComboBox {
                         return root.buttonIcon;
                     }
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: Appearance.tiling.textDim
                 }
             }
 
             StyledText {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
-                color: Appearance.colors.colOnSecondaryContainer
+                color: Appearance.tiling.textBright
                 text: root.displayText
+                font.family: Appearance.font.family.monospace
+                font.pixelSize: Appearance.font.pixelSize.small
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
             }
@@ -94,21 +98,23 @@ ComboBox {
         required property int index
         property color color: {
             if (root.currentIndex === itemDelegate.index) {
-                if (itemDelegate.down) return Appearance.colors.colSecondaryContainerActive;
-                if (itemDelegate.hovered) return Appearance.colors.colSecondaryContainerHover;
-                return Appearance.colors.colSecondaryContainer;
+                if (itemDelegate.down) return Appearance.tiling.bgActive;
+                if (itemDelegate.hovered) return Appearance.tiling.bgHover;
+                return Appearance.tiling.bgActive;
             } else {
-                if (itemDelegate.down) return Appearance.colors.colLayer3Active;
-                if (itemDelegate.hovered) return Appearance.colors.colLayer3Hover;
-                return ColorUtils.transparentize(Appearance.colors.colLayer3);
+                if (itemDelegate.down) return Appearance.tiling.bgActive;
+                if (itemDelegate.hovered) return Appearance.tiling.bgHover;
+                return Appearance.tiling.bg;
             }
         }
-        property color colText: (root.currentIndex === itemDelegate.index) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer3
+        property color colText: (root.currentIndex === itemDelegate.index) ? Appearance.tiling.textBright : Appearance.tiling.text
 
         background: Rectangle {
             anchors.fill: parent
-            radius: Appearance.rounding.small
+            radius: 0
             color: itemDelegate.color
+            border.width: root.currentIndex === itemDelegate.index ? Appearance.tiling.borderWidth : 0
+            border.color: Appearance.tiling.borderFocus
 
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -141,7 +147,7 @@ ComboBox {
                         anchors.centerIn: parent
                         text: itemDelegate.model?.icon ?? ""
                         iconSize: Appearance.font.pixelSize.larger
-                        color: itemDelegate.colText
+                        color: Appearance.tiling.textDim
                     }
                 }
             }
@@ -151,6 +157,8 @@ ComboBox {
                 Layout.preferredHeight: Appearance.font.pixelSize.larger
                 color: itemDelegate.colText
                 text: itemDelegate.model[root.textRole]
+                font.family: Appearance.font.family.monospace
+                font.pixelSize: Appearance.font.pixelSize.small
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
             }
@@ -161,7 +169,7 @@ ComboBox {
         y: root.height + 4
         width: root.width
         height: Math.min(listView.contentHeight + topPadding + bottomPadding, 300)
-        padding: 8
+        padding: 2
 
         enter: Transition {
             PropertyAnimation {
@@ -183,24 +191,19 @@ ComboBox {
             }
         }
 
-        background: Item {
-            StyledRectangularShadow {
-                target: popupBackground
-            }
-
-            Rectangle {
-                id: popupBackground
-                anchors.fill: parent
-                radius: Appearance.rounding.normal
-                color: Appearance.m3colors.m3surfaceContainerHigh
-            }
+        background: Rectangle {
+            anchors.fill: parent
+            radius: 0
+            color: Appearance.tiling.bg
+            border.width: Appearance.tiling.borderWidth
+            border.color: Appearance.tiling.borderFocus
         }
 
         contentItem: StyledListView {
             id: listView
             clip: true
             implicitHeight: contentHeight
-            spacing: 2
+            spacing: 0
             model: root.popup.visible ? root.delegateModel : null
             currentIndex: root.highlightedIndex
         }

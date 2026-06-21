@@ -3,22 +3,21 @@ import qs.modules.common.functions
 import QtQuick
 import QtQuick.Controls
 
-/**
- * Material 3 styled SpinBox component.
- */
 SpinBox {
     id: root
 
     property real baseHeight: 35
-    property real radius: Appearance.rounding.small
-    property real innerButtonRadius: Appearance.rounding.unsharpen
+    property real radius: 0
+    property real innerButtonRadius: 0
     editable: true
 
     opacity: root.enabled ? 1 : 0.4
 
     background: Rectangle {
-        color: Appearance.colors.colLayer2
+        color: Appearance.tiling.bgInput
         radius: root.radius
+        border.width: Appearance.tiling.borderWidth
+        border.color: root.activeFocus ? Appearance.tiling.borderFocus : Appearance.tiling.border
     }
 
     contentItem: Item {
@@ -29,7 +28,7 @@ SpinBox {
             id: labelText
             anchors.centerIn: parent
             text: root.value // displayText would make the numbers weird like 1,000 instead of 1000
-            color: Appearance.colors.colOnLayer2
+            color: Appearance.tiling.textBright
             font.family: Appearance.font.family.numbers
             font.variableAxes: Appearance.font.variableAxes.numbers
             font.pixelSize: Appearance.font.pixelSize.small
@@ -52,18 +51,17 @@ SpinBox {
         topRightRadius: root.innerButtonRadius
         bottomRightRadius: root.innerButtonRadius
 
-        color: root.down.pressed ? Appearance.colors.colLayer2Active : 
-            root.down.hovered ? Appearance.colors.colLayer2Hover : 
-            ColorUtils.transparentize(Appearance.colors.colLayer2)
-        Behavior on color {
-            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-        }
+        color: root.down.pressed ? Appearance.tiling.bgActive :
+            root.down.hovered ? Appearance.tiling.bgHover :
+            "transparent"
+        border.width: Appearance.tiling.borderWidth
+        border.color: Appearance.tiling.border
 
         MaterialSymbol {
             anchors.centerIn: parent
             text: "remove"
             iconSize: 20
-            color: Appearance.colors.colOnLayer2
+            color: Appearance.tiling.text
         }
     }
 
@@ -79,18 +77,17 @@ SpinBox {
         topLeftRadius: root.innerButtonRadius
         bottomLeftRadius: root.innerButtonRadius
 
-        color: root.up.pressed ? Appearance.colors.colLayer2Active : 
-            root.up.hovered ? Appearance.colors.colLayer2Hover : 
-            ColorUtils.transparentize(Appearance.colors.colLayer2)
-        Behavior on color {
-            animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-        }
+        color: root.up.pressed ? Appearance.tiling.bgActive :
+            root.up.hovered ? Appearance.tiling.bgHover :
+            "transparent"
+        border.width: Appearance.tiling.borderWidth
+        border.color: Appearance.tiling.border
 
         MaterialSymbol {
             anchors.centerIn: parent
             text: "add"
             iconSize: 20
-            color: Appearance.colors.colOnLayer2
+            color: Appearance.tiling.text
         }
     }
 }

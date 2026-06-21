@@ -67,6 +67,62 @@ ApplicationWindow {
     ]
     property int currentPage: 0
 
+    component TuiSettingsButton: Item {
+        id: button
+        property string buttonText: ""
+        property bool toggled: false
+        property bool hovered: hoverArea.containsMouse
+        property bool pressed: hoverArea.pressed
+        signal clicked()
+        signal rightClicked()
+
+        implicitHeight: 28
+        implicitWidth: label.implicitWidth + 16
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 0
+            color: button.pressed ? Appearance.tiling.bgActive
+                : button.hovered || button.toggled ? Appearance.tiling.bgHover
+                : "transparent"
+            border.width: Appearance.tiling.borderWidth
+            border.color: button.toggled ? Appearance.tiling.borderFocus
+                : button.hovered ? Appearance.tiling.borderFocus
+                : Appearance.tiling.border
+        }
+
+        StyledText {
+            id: label
+            anchors {
+                left: parent.left
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+                leftMargin: 8
+                rightMargin: 8
+            }
+            text: button.buttonText
+            elide: Text.ElideRight
+            maximumLineCount: 1
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: Appearance.font.pixelSize.small
+            color: button.toggled ? Appearance.tiling.textBright : Appearance.tiling.text
+        }
+
+        MouseArea {
+            id: hoverArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            cursorShape: Qt.PointingHandCursor
+            onClicked: mouse => {
+                if (mouse.button === Qt.RightButton)
+                    button.rightClicked();
+                else
+                    button.clicked();
+            }
+        }
+    }
+
     visible: true
     onClosing: Qt.quit()
     title: "illogical-impulse Settings"
@@ -80,7 +136,7 @@ ApplicationWindow {
     minimumHeight: 500
     width: 1100
     height: 750
-    color: Appearance.m3colors.m3background
+    color: Appearance.tiling.bg
 
     ColumnLayout {
         anchors {
@@ -109,42 +165,37 @@ ApplicationWindow {
             }
         }
 
-        Item { // Titlebar
+        Rectangle { // Titlebar
             visible: Config.options?.windows.showTitlebar
             Layout.fillWidth: true
             Layout.fillHeight: false
-            implicitHeight: Math.max(titleText.implicitHeight, windowControlsRow.implicitHeight)
+            implicitHeight: Appearance.tiling.titlebarHeight + 2
+            radius: 0
+            color: Appearance.tiling.bgTitlebar
+            border.width: Appearance.tiling.borderWidth
+            border.color: Appearance.tiling.border
             StyledText {
                 id: titleText
                 anchors {
-                    left: Config.options.windows.centerTitle ? undefined : parent.left
-                    horizontalCenter: Config.options.windows.centerTitle ? parent.horizontalCenter : undefined
+                    left: parent.left
                     verticalCenter: parent.verticalCenter
-                    leftMargin: 12
+                    leftMargin: 8
                 }
-                color: Appearance.colors.colOnLayer0
-                text: Translation.tr("Settings")
+                color: Appearance.tiling.textBright
+                text: `settings:${root.pages[root.currentPage].name.toLowerCase()}`
                 font {
-                    family: Appearance.font.family.title
-                    pixelSize: Appearance.font.pixelSize.title
-                    variableAxes: Appearance.font.variableAxes.title
+                    family: Appearance.font.family.monospace
+                    pixelSize: Appearance.font.pixelSize.small
                 }
             }
             RowLayout { // Window controls row
                 id: windowControlsRow
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                RippleButton {
-                    buttonRadius: Appearance.rounding.full
-                    implicitWidth: 35
-                    implicitHeight: 35
+                anchors.rightMargin: 4
+                TuiSettingsButton {
+                    buttonText: "x"
                     onClicked: root.close()
-                    contentItem: MaterialSymbol {
-                        anchors.centerIn: parent
-                        horizontalAlignment: Text.AlignHCenter
-                        text: "close"
-                        iconSize: 20
-                    }
                 }
             }
         }
@@ -152,86 +203,86 @@ ApplicationWindow {
         RowLayout { // Window content with navigation rail and content pane
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: contentPadding
-            Item {
+            spacing: 8
+            Rectangle {
                 id: navRailWrapper
                 Layout.fillHeight: true
-                Layout.margins: 5
-                implicitWidth: navRail.expanded ? 150 : fab.baseSize
-                Behavior on implicitWidth {
-                    animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-                }
-                NavigationRail { // Window content with navigation rail and content pane
-                    id: navRail
-                    anchors {
-                        left: parent.left
-                        top: parent.top
-                        bottom: parent.bottom
-                    }
-                    spacing: 10
-                    expanded: root.width > 900
-                    
-                    NavigationRailExpandButton {
-                        focus: root.visible
-                    }
+                implicitWidth: 176
+                radius: 0
+                color: Appearance.tiling.bg
+                border.width: Appearance.tiling.borderWidth
+                border.color: Appearance.tiling.border
 
-                    FloatingActionButton {
-                        id: fab
+                ColumnLayout {
+                    anchors {
+                        fill: parent
+                        margins: 6
+                    }
+                    spacing: 4
+
+                    TuiSettingsButton {
+                        id: configPathButton
                         property bool justCopied: false
-                        iconText: justCopied ? "check" : "edit"
-                        buttonText: justCopied ? Translation.tr("Path copied") : Translation.tr("Config file")
-                        expanded: navRail.expanded
-                        downAction: () => {
+                        Layout.fillWidth: true
+                        buttonText: justCopied ? "copied" : "config file"
+                        onClicked: {
                             Qt.openUrlExternally(`${Directories.config}/illogical-impulse/config.json`);
                         }
-                        altAction: () => {
+                        onRightClicked: {
                             Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
-                            fab.justCopied = true;
+                            configPathButton.justCopied = true;
                             revertTextTimer.restart()
                         }
-
+                        StyledToolTip {
+                            text: Translation.tr("Open the shell config file\nRight-click to copy path")
+                        }
                         Timer {
                             id: revertTextTimer
                             interval: 1500
-                            onTriggered: {
-                                fab.justCopied = false;
-                            }
-                        }
-
-                        StyledToolTip {
-                            text: Translation.tr("Open the shell config file\nAlternatively right-click to copy path")
+                            onTriggered: configPathButton.justCopied = false
                         }
                     }
 
-                    NavigationRailTabArray {
-                        currentIndex: root.currentPage
-                        expanded: navRail.expanded
-                        Repeater {
-                            model: root.pages
-                            NavigationRailButton {
-                                required property var index
-                                required property var modelData
-                                toggled: root.currentPage === index
-                                onPressed: root.currentPage = index;
-                                expanded: navRail.expanded
-                                buttonIcon: modelData.icon
-                                buttonIconRotation: modelData.iconRotation || 0
-                                buttonText: modelData.name
-                                showToggledHighlight: false
-                            }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: Appearance.tiling.border
+                    }
+
+                    Repeater {
+                        model: root.pages
+                        TuiSettingsButton {
+                            required property int index
+                            required property var modelData
+                            Layout.fillWidth: true
+                            buttonText: `${index + 1}. ${modelData.name.toLowerCase()}`
+                            toggled: root.currentPage === index
+                            onClicked: root.currentPage = index
                         }
                     }
 
                     Item {
                         Layout.fillHeight: true
                     }
+
+                    TuiSettingsButton {
+                        Layout.fillWidth: true
+                        buttonText: "copy path"
+                        onClicked: {
+                            Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
+                            configPathButton.justCopied = true;
+                            revertTextTimer.restart();
+                        }
+                    }
                 }
             }
             Rectangle { // Content container
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: Appearance.m3colors.m3surfaceContainerLow
-                radius: Appearance.rounding.windowRounding - root.contentPadding
+                color: Appearance.tiling.bg
+                radius: 0
+                border.width: Appearance.tiling.borderWidth
+                border.color: Appearance.tiling.border
 
                 Loader {
                     id: pageLoader

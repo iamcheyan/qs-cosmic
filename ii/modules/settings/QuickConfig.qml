@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
 import qs.services
@@ -26,11 +25,18 @@ ContentPage {
     component SmallLightDarkPreferenceButton: RippleButton {
         id: smallLightDarkPreferenceButton
         required property bool dark
-        property color colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2
+        property color colText: toggled ? Appearance.tiling.textBright : Appearance.tiling.text
         padding: 5
         Layout.fillWidth: true
         toggled: Appearance.m3colors.darkmode === dark
-        colBackground: Appearance.colors.colLayer2
+        buttonRadius: 0
+        buttonRadiusPressed: 0
+        rippleEnabled: false
+        colBackground: toggled ? Appearance.tiling.bgActive : Appearance.tiling.bg
+        colBackgroundHover: Appearance.tiling.bgHover
+        colRipple: Appearance.tiling.bgActive
+        borderWidth: Appearance.tiling.borderWidth
+        borderColor: toggled ? Appearance.tiling.borderFocus : Appearance.tiling.border
         onClicked: {
             Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`]);
         }
@@ -48,6 +54,7 @@ ContentPage {
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: dark ? Translation.tr("Dark") : Translation.tr("Light")
+                    font.family: Appearance.font.family.monospace
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     color: smallLightDarkPreferenceButton.colText
                 }
@@ -67,21 +74,22 @@ ContentPage {
             Item {
                 implicitWidth: 340
                 implicitHeight: 200
-                
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 0
+                    color: Appearance.tiling.bgInput
+                    border.width: Appearance.tiling.borderWidth
+                    border.color: Appearance.tiling.border
+                }
                 StyledImage {
                     id: wallpaperPreview
-                    anchors.fill: parent
+                    anchors {
+                        fill: parent
+                        margins: 1
+                    }
                     fillMode: Image.PreserveAspectCrop
                     source: Config.options.background.wallpaperPath
                     cache: false
-                    layer.enabled: true
-                    layer.effect: OpacityMask {
-                        maskSource: Rectangle {
-                            width: 360
-                            height: 200
-                            radius: Appearance.rounding.normal
-                        }
-                    }
                 }
             }
 
@@ -90,7 +98,6 @@ ContentPage {
                     enabled: !randomWallProc.running
                     visible: Config.options.policies.weeb === 1
                     Layout.fillWidth: true
-                    buttonRadius: Appearance.rounding.small
                     materialIcon: "ifl"
                     mainText: randomWallProc.running ? Translation.tr("Be patient...") : Translation.tr("Random: Konachan")
                     onClicked: {
@@ -105,7 +112,6 @@ ContentPage {
                     enabled: !randomWallProc.running
                     visible: Config.options.policies.weeb === 1
                     Layout.fillWidth: true
-                    buttonRadius: Appearance.rounding.small
                     materialIcon: "ifl"
                     mainText: randomWallProc.running ? Translation.tr("Be patient...") : Translation.tr("Random: osu! seasonal")
                     onClicked: {
@@ -130,8 +136,9 @@ ContentPage {
                             spacing: 10
                             StyledText {
                                 font.pixelSize: Appearance.font.pixelSize.small
+                                font.family: Appearance.font.family.monospace
                                 text: Translation.tr("Choose file")
-                                color: Appearance.colors.colOnSecondaryContainer
+                                color: Appearance.tiling.text
                             }
                             RowLayout {
                                 spacing: 3
@@ -325,7 +332,6 @@ ContentPage {
             id: copyPathButton
             property bool justCopied: false
             Layout.fillWidth: false
-            buttonRadius: Appearance.rounding.small
             materialIcon: justCopied ? "check" : "content_copy"
             mainText: justCopied ? Translation.tr("Path copied") : Translation.tr("Copy path")
             onClicked: {
@@ -333,10 +339,6 @@ ContentPage {
                 Quickshell.clipboardText = FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
                 revertTextTimer.restart();
             }
-            colBackground: ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
-            colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-            colRipple: Appearance.colors.colPrimaryContainerActive
-
             Timer {
                 id: revertTextTimer
                 interval: 1500
