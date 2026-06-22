@@ -55,7 +55,7 @@ Item {
     RowLayout { // Real content
         id: rowLayout
 
-        spacing: 4
+        spacing: Config.options.bar.rightModuleSpacing
         anchors.fill: parent
 
         CosmicIcon {

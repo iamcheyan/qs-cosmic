@@ -70,7 +70,7 @@ Item {
         columns: root.vertical ? 1 : -1
         anchors.fill: parent
         rowSpacing: 8
-        columnSpacing: 15
+        columnSpacing: Config.options.bar.rightModuleSpacing
 
         MouseArea {
             id: trayOverflowButton

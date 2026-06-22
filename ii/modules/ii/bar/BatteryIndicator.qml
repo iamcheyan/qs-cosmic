@@ -33,7 +33,7 @@ MouseArea {
     RowLayout {
         id: rowLayout
         anchors.centerIn: parent
-        spacing: 4
+        spacing: Config.options.bar.rightModuleSpacing
 
         CosmicIcon {
             Layout.alignment: Qt.AlignVCenter

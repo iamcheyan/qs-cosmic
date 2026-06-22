@@ -36,8 +36,8 @@ RippleButton {
     RowLayout {
         id: indicatorsRowLayout
         anchors.centerIn: parent
-        property real realSpacing: 0
-        spacing: 0
+        property real realSpacing: Config.options.bar.rightModuleSpacing
+        spacing: Config.options.bar.rightModuleSpacing
 
         Revealer {
             reveal: Audio.sink?.audio?.muted ?? false
