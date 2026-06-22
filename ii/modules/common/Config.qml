@@ -199,6 +199,7 @@ Singleton {
                 property bool borderless: false // true for no grouping of items
                 property bool showBackground: true
                 property bool vertical: false
+                property int rightModuleSpacing: 8 // pixels between right-side modules
                 property list<string> rightModules: [
                     "sidebar",
                     "util:audio",

@@ -1,87 +1,105 @@
 # Bar 右侧模块自定义：声明式模块列表
 
-## 目标
+## 用法
 
-让用户像 waybar 的 `modules-right` 一样，在 `config.json` 里通过
-一个数组自定义 bar 右侧从托盘开始的模块顺序和开关。
-
-## 设计
-
-### 配置
+在 `~/.config/illogical-impulse/config.json` 的 `bar` 对象里配置两个属性：
 
 ```json
 "bar": {
+  "rightModuleSpacing": 8,
   "rightModules": [
-    "weather",
-    "systray",
-    "media",
-    "battery",
-    "util:bluetooth",
-    "util:wifi",
-    "util:clipboard",
-    "util:screenshot",
-    "util:colorpicker",
-    "util:mic",
-    "util:nightlight",
-    "util:idle",
+    "sidebar",
     "util:audio",
-    "sidebar"
+    "util:idle",
+    "util:nightlight",
+    "util:mic",
+    "util:colorpicker",
+    "util:screenshot",
+    "util:clipboard",
+    "util:wifi",
+    "util:bluetooth",
+    "battery",
+    "media",
+    "systray",
+    "spacer",
+    "weather"
   ]
 }
 ```
 
-- 数组顺序 = 从左到右的显示顺序（bar 右侧区域内）
-- 模块在数组里 = 显示；不在 = 隐藏。无需额外 `showXxx` 开关
-- `util:` 前缀 = UtilButtons 里拆出来的工具按钮
+### rightModules
 
-### 模块注册表
+- **数组顺序**：第一个 = 最右，最后一个 = 最左（因为 bar 右侧用
+  `layoutDirection: Qt.RightToLeft` 渲染）
+- **模块在数组里 = 显示**，不在 = 隐藏。无需额外开关
+- 修改后保存文件，quickshell 自动热重载
 
-`ii/modules/ii/bar/RightModuleRegistry.qml` 维护 `name → Component` 映射：
+### rightModuleSpacing
 
-| name | Component | 说明 |
-|---|---|---|
-| `weather` | WeatherBar | 天气 |
-| `systray` | SysTray | 系统托盘 |
-| `media` | Media | 媒体控制 |
-| `battery` | BatteryIndicator | 电池 |
-| `util:bluetooth` | CircleUtilButton | 蓝牙对话框 |
-| `util:wifi` | CircleUtilButton | WiFi 对话框 |
-| `util:clipboard` | CircleUtilButton | 剪贴板对话框 |
-| `util:screenshot` | RippleButton | 截图 |
-| `util:colorpicker` | CircleUtilButton | 取色器 |
-| `util:mic` | CircleUtilButton | 麦克风静音 |
-| `util:nightlight` | CircleUtilButton | 夜灯 |
-| `util:idle` | CircleUtilButton | 阻止自动休眠 |
-| `util:audio` | CircleUtilButton | 音量对话框 |
-| `sidebar` | RippleButton | 右侧边栏按钮（音量/麦克风静音/键盘布局/通知/电源指示） |
-| `spacer` | Item | 占位弹性空间（fillWidth） |
+- 模块之间的像素间距（整数）
+- 默认 `8`
+- 设 `0` = 模块紧贴
+- 设 `16` = 宽松
 
-### 渲染
+## 可用模块
 
-`BarContent.qml` 右侧区域用 `Repeater` 遍历 `rightModules`，从注册表
-取 Component 实例化。`layoutDirection: Qt.RightToLeft` 保持不变
-（数组从左到右 = 视觉上从托盘往右排列）。
+| name | 说明 |
+|---|---|
+| `weather` | 天气 |
+| `systray` | 系统托盘 |
+| `media` | 媒体控制 |
+| `battery` | 电池 |
+| `sidebar` | 右侧边栏按钮（音量/麦克风静音/键盘布局/通知/电源指示） |
+| `spacer` | 弹性占位空间（fillWidth，把两侧模块推开） |
+| `util:bluetooth` | 蓝牙对话框 |
+| `util:wifi` | WiFi 对话框 |
+| `util:clipboard` | 剪贴板对话框 |
+| `util:screenshot` | 截图工具 |
+| `util:colorpicker` | 取色器 |
+| `util:mic` | 麦克风静音切换 |
+| `util:nightlight` | 夜灯切换 |
+| `util:idle` | 阻止自动休眠 |
+| `util:audio` | 音量对话框 |
 
-### 与现有配置的关系
+## 示例
 
-- `Config.options.bar.utilButtons.showScreenSnip` 等开关**废弃**，
-  改由模块是否在 `rightModules` 数组里决定
-- `Config.options.bar.verbose`（控制 UtilButtons 整体显隐）废弃
-- `Config.options.bar.weather.enable` 保留（控制 WeatherBar 内部
-  是否拉取数据），但模块是否显示由 `rightModules` 决定
+### 精简布局（只保留托盘、电池、电源）
 
-### 设置 UI
+```json
+"rightModules": [
+  "sidebar",
+  "battery",
+  "systray",
+  "spacer"
+]
+```
 
-BarConfig 里：
-- 显示可用模块清单（带说明）
-- 提供一个可拖拽排序的 ListView，结果写回 `rightModules`
-- 或至少提供文本编辑 + 预览
+### 紧凑无间距
 
-## 实现步骤
+```json
+"rightModuleSpacing": 0,
+"rightModules": [ ... ]
+```
 
-1. 创建 `RightModuleRegistry.qml`
-2. `Config.qml` 添加 `rightModules` 数组（默认 = 当前顺序）
-3. `BarContent.qml` 右侧用 Repeater 替换写死的模块
-4. 拆 `UtilButtons.qml` 里的按钮为独立 Component
-5. 更新 BarConfig 设置 UI
-6. 清理废弃的 `showXxx` 配置
+### 天气放最右边
+
+```json
+"rightModules": [
+  "weather",
+  "sidebar",
+  "battery",
+  "systray",
+  "spacer"
+]
+```
+
+## 实现细节
+
+- `Config.qml`：`bar.rightModules`（`list<string>`）和
+  `bar.rightModuleSpacing`（`int`，默认 8）
+- `RightModuleRegistry.qml`：模块名 → Component 映射
+- `BarContent.qml`：右侧 `RowLayout` 用 `Repeater` 遍历
+  `rightModules`，`spacing` 绑定到 `rightModuleSpacing`
+- 各模块组件在 `ii/modules/ii/bar/modules/` 目录
+- `SidebarIndicators.qml`：从原 BarContent 抽出的右侧边栏指示器
+- `SpacerItem.qml`：弹性占位，`Layout.fillWidth: true`
