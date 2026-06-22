@@ -1,6 +1,7 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import qs
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -95,6 +96,17 @@ Singleton {
                 monitorName: "",
                 isTrailingEmpty: true
             });
+        }
+
+        const anchorId = GlobalStates.overviewAnchorWorkspaceId > 0
+            ? GlobalStates.overviewAnchorWorkspaceId
+            : (root.activeWorkspace?.id ?? 0);
+        if (anchorId > 0) {
+            const anchorIdx = model.findIndex(e => e.id === anchorId && !e.isTrailingEmpty);
+            if (anchorIdx > 0) {
+                const [anchorEntry] = model.splice(anchorIdx, 1);
+                model.unshift(anchorEntry);
+            }
         }
 
         return model;

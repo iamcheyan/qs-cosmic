@@ -210,6 +210,11 @@ Scope {
                 target: GlobalStates
                 function onOverviewOpenChanged() {
                     if (!GlobalStates.overviewOpen) {
+                        const settled = GlobalStates.overviewFocusedWorkspaceId > 0
+                            ? GlobalStates.overviewFocusedWorkspaceId
+                            : overviewScope.currentWorkspaceId();
+                        if (settled > 0)
+                            GlobalStates.overviewAnchorWorkspaceId = settled;
                         overviewScope.overviewGrabbed = false;
                         GlobalStates.overviewFocusedWorkspaceId = -1;
                         GlobalStates.overviewDraggingFromWorkspace = -1;
@@ -218,6 +223,8 @@ Scope {
                         GlobalFocusGrab.dismiss();
                     } else {
                         GlobalStates.overviewFocusedWorkspaceId = overviewScope.currentWorkspaceId();
+                        if (GlobalStates.overviewAnchorWorkspaceId < 0)
+                            GlobalStates.overviewAnchorWorkspaceId = overviewScope.currentWorkspaceId();
                         if (panelWindow.isFocusedOverviewWindow && !overviewScope.overviewGrabbed)
                             GlobalFocusGrab.addDismissable(panelWindow);
                         Qt.callLater(() => overviewScope.requestOverviewFocus());

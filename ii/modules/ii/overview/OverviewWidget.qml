@@ -228,6 +228,7 @@ Item {
                                     GlobalStates.overviewOpen = false;
                                     Hyprland.dispatch(`hl.dsp.focus({ workspace = "empty" })`);
                                 } else {
+                                    GlobalStates.overviewAnchorWorkspaceId = workspace.workspaceValue;
                                     GlobalStates.overviewOpen = false;
                                     root.dispatchFocusWorkspace(workspace.workspaceValue);
                                 }
@@ -382,6 +383,8 @@ Item {
 
                             if (event.button === Qt.LeftButton) {
                                 GlobalStates.overviewOpen = false;
+                                if (windowData?.workspace?.id > 0)
+                                    GlobalStates.overviewAnchorWorkspaceId = windowData.workspace.id;
                                 Hyprland.dispatch(`hl.dsp.focus({window = "address:${windowData.address}"})`);
                                 event.accepted = true;
                             } else if (event.button === Qt.MiddleButton) {

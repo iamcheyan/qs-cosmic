@@ -17,6 +17,7 @@ Singleton {
     property bool osdVolumeOpen: false
     property bool overviewOpen: false
     property int overviewFocusedWorkspaceId: -1
+    property int overviewAnchorWorkspaceId: -1
     property int overviewDraggingFromWorkspace: -1
     property int overviewDraggingTargetWorkspace: -1
     property bool overviewDraggingTargetIsTrailing: false
