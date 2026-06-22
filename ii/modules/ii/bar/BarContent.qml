@@ -139,6 +139,7 @@ Item { // Bar content region
             bottom: parent.bottom
             left: centerClock.right
             right: parent.right
+            rightMargin: root.barSidePadding
         }
         implicitWidth: rightSectionRowLayout.implicitWidth
         implicitHeight: Appearance.sizes.baseBarHeight
