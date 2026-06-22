@@ -1,58 +1,119 @@
-# Overview 工作区排序：停留工作区置顶
+# Overview 工作区切换：Win11 Alt+Tab 逻辑
 
-## 行为
+## Win11 Alt+Tab 核心机制
 
-overview 网格中，**上一次 overview 关闭时停留的工作区**排在第一格；
-其余按 id 升序、末尾带“新工作区”占位。
+### MRU（Most Recently Used，最近使用优先）
 
-由 `GlobalStates.overviewAnchorWorkspaceId`（新增，默认 `-1`）驱动。
-`overviewWorkspaceEntriesGlobal()`（`ii/services/HyprlandData.qml:60`）
-末尾用它做 `unshift`：
+任务列表按 **Z-order**（窗口堆叠顺序）排列，等价于 **最近使用优先**：
+- 最近使用的窗口 → 第一位
+- 次近使用的窗口 → 第二位
+- 以此类推
 
-```js
-const anchorId = GlobalStates.overviewAnchorWorkspaceId > 0
-    ? GlobalStates.overviewAnchorWorkspaceId
-    : (root.activeWorkspace?.id ?? 0);
-if (anchorId > 0) {
-    const anchorIdx = model.findIndex(e => e.id === anchorId && !e.isTrailingEmpty);
-    if (anchorIdx > 0) {
-        const [anchorEntry] = model.splice(anchorIdx, 1);
-        model.unshift(anchorEntry);
-    }
+### 关键行为
+
+1. **打开切换器**：按 Alt+Tab，列表出现，**当前活动窗口 A 排第一**，光标初始在**第二位**（下一个最近的窗口）
+
+2. **Tab 导航**：按 Tab 前进，Shift+Tab 后退。列表顺序在打开期间**不变**
+
+3. **释放 Alt = 提交**：选中的窗口成为新的活动窗口，被移到 Z-order 顶端（MRU 第一位）
+
+4. **下次打开**：列表按新的 MRU 顺序排列。刚切换到的窗口排第一，之前的窗口降到第二位
+
+### 来回切换示例
+
+假设有窗口 `A B C`，当前在 A：
+
+```
+第1次 Alt+Tab:  列表 [A B C], 光标在B → 释放 → 切换到B
+第2次 Alt+Tab:  列表 [B A C], 光标在A → 释放 → 切换回A
+第3次 Alt+Tab:  列表 [A B C], 光标在B → 释放 → 切换到B
+...
+```
+
+**快速 Alt+Tab（按一下就释放）= 光标停第二位 = 永远在两个最近任务间来回切换。**
+
+### Tab 多次切换示例
+
+假设列表 `A W Z E U B C`，当前在 A，想切到 U：
+
+```
+Alt+Tab+Tab+Tab+Tab (光标移到U) → 释放 → 切换到U
+下次打开: 列表 [U A W Z E B C], 光标在A
+Alt+Tab+Tab+Tab+Tab (光标移到E) → 释放 → 切换到E
+下次打开: 列表 [E U A W Z B C], 光标在U
+```
+
+**被切换到的窗口→第一位，之前的第一位→第二位，其余按原 MRU 顺序保持。**
+
+## 映射到 Overview 工作区
+
+### 当前实现 vs Win11
+
+| | Win11 | 当前 overview |
+|---|---|---|
+| 排序依据 | 完整 MRU 顺序（Z-order） | 单一锚点 + id 升序 |
+| 切换后 | 选中项→第一位，之前项→第二位 | 选中项→第一位，其余按 id |
+| 来回切换 | 天然支持（两位间反复） | 需要恰好选中第二位才行 |
+
+### 实现方案
+
+将 `GlobalStates.overviewAnchorWorkspaceId`（单一锚点）升级为
+`GlobalStates.overviewWorkspaceMru`（工作区使用顺序数组）。
+
+#### MRU 列表维护
+
+- **初始化**：首次启动/锚点未初始化时，按 id 升序填充所有可见工作区
+- **切换工作区时**（overview 关闭、点击工作区格、点击窗口）：
+  1. 从 MRU 列表中移除选中的工作区 id
+  2. 将其 `unshift` 到列表头部
+- **overview 打开期间**：MRU 列表**冻结**，不随高亮变化
+  （等价于 Win11 "列表顺序在打开期间不变"）
+
+#### overview 渲染
+
+`overviewWorkspaceEntriesGlobal()` 按 MRU 顺序排列工作区：
+
+```
+function overviewWorkspaceEntriesGlobal() {
+    // 1. 获取所有有窗口的工作区（id 升序）
+    // 2. 按 overviewWorkspaceMru 重排序：MRU 靠前的排前面
+    // 3. 末尾追加 trailing empty 占位
 }
 ```
 
-## 为什么用锚点而不是 `activeWorkspace`
+#### 导航逻辑
 
-最初直接用 `activeWorkspace.id` 置顶，但 grab 模式下
-`selectOverviewWorkspace` 会实时 dispatch focus，导致
-`activeWorkspace` 跟着高亮变 → 排序跟着变 → Tab 循环只在两个
-工作区间反复横跳。
+`navigateOverviewByIndex(delta)` 基于 MRU 排序后的列表 index 做模运算：
+- Tab（+1）= MRU 列表中的下一个
+- Shift+Tab（-1）= MRU 列表中的上一个
+- 打开时光标初始在第二位（Win11 行为）
 
-锚点**只在 overview 关闭时**更新为停留的工作区，grab 循环期间
-冻结，所以 Tab 循环看到的是稳定顺序。
+#### 光标初始位置
 
-## 锚点更新时机
+Win11 打开 Alt+Tab 时光标在**第二位**（不是第一位）。
+当前 overview 打开时 `overviewFocusedWorkspaceId = currentWorkspaceId()`，
+即光标在第一位（当前工作区）。
 
-`Overview.qml` 的 `onOverviewOpenChanged`：
+要完全模拟 Win11，需要：
+- overview 打开时光标初始在 **MRU 第二位**（次最近的工作区）
+- 这样快速 Tab+释放 = 切到次最近的工作区
+- 再次打开 = 刚切换到的工作区成第一位，之前的成第二位 → 来回切换
 
-- **关闭时**：`overviewAnchorWorkspaceId = overviewFocusedWorkspaceId
-  > 0 ? overviewFocusedWorkspaceId : currentWorkspaceId()`
-  —— 松开 Win / Esc / 点击外部时，把停留的工作区记为锚点。
-- **打开时**：若锚点未初始化（`< 0`），设为当前工作区。
+但当前 overview 的 grab 模式已经实现了类似行为：
+`openGrabbedMode(dir)` 会立即 cycle 一次，等价于光标从第一位移到第二位。
+所以保持现有 grab 模式即可。
 
-`OverviewWidget.qml`：
+#### 锚点更新时机
 
-- **点击工作区格**切换：`overviewAnchorWorkspaceId = workspace.workspaceValue`
-  再 dispatch。
-- **点击窗口**聚焦：`overviewAnchorWorkspaceId = windowData.workspace.id`
-  再 dispatch。
+与之前一致，只在 overview 关闭时更新 MRU：
+- `Overview.qml onOverviewOpenChanged` 关闭分支：
+  把停留的工作区移到 MRU 头部
+- `OverviewWidget.qml` 点击工作区格/窗口：
+  同样更新 MRU
 
-## 边界情况
+## 注意事项
 
-- `anchorId` 不在 model 中（被过滤 / 是空槽）：`findIndex` 返回 `-1`，
-  不重排，回退到原 id 升序。
-- 首次启动 / 锚点未设置：回退到 `activeWorkspace.id`，行为等同
-  “当前工作区置顶”。
-- 拖拽落点用 `workspace.workspaceValue`（即 `modelData.id`）匹配，
-  与 index 无关，置顶不影响拖拽。
+- `isTrailingEmpty` 占位不参与 MRU，永远在末尾
+- MRU 列表中可能包含已关闭的工作区 id，渲染时需过滤
+- 多显示器：MRU 是全局的，跨显示器切换同样更新
+- 拖拽落点用 `modelData.id` 匹配，与 MRU 顺序无关

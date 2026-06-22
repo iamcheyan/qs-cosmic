@@ -170,6 +170,19 @@ Scope {
         }
     }
 
+    // Keep MRU in sync when the user switches workspaces outside of overview
+    // (e.g. via Hyprland keybindings). While overview is open the MRU is frozen.
+    Connections {
+        target: HyprlandData
+        function onActiveWorkspaceChanged() {
+            if (GlobalStates.overviewOpen)
+                return;
+            const wsId = HyprlandData.activeWorkspace?.id ?? 0;
+            if (wsId > 0)
+                GlobalStates.promoteWorkspaceMru(wsId);
+        }
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -214,7 +227,7 @@ Scope {
                             ? GlobalStates.overviewFocusedWorkspaceId
                             : overviewScope.currentWorkspaceId();
                         if (settled > 0)
-                            GlobalStates.overviewAnchorWorkspaceId = settled;
+                            GlobalStates.promoteWorkspaceMru(settled);
                         overviewScope.overviewGrabbed = false;
                         GlobalStates.overviewFocusedWorkspaceId = -1;
                         GlobalStates.overviewDraggingFromWorkspace = -1;
@@ -223,8 +236,8 @@ Scope {
                         GlobalFocusGrab.dismiss();
                     } else {
                         GlobalStates.overviewFocusedWorkspaceId = overviewScope.currentWorkspaceId();
-                        if (GlobalStates.overviewAnchorWorkspaceId < 0)
-                            GlobalStates.overviewAnchorWorkspaceId = overviewScope.currentWorkspaceId();
+                        if (GlobalStates.overviewWorkspaceMru.length === 0)
+                            GlobalStates.promoteWorkspaceMru(overviewScope.currentWorkspaceId());
                         if (panelWindow.isFocusedOverviewWindow && !overviewScope.overviewGrabbed)
                             GlobalFocusGrab.addDismissable(panelWindow);
                         Qt.callLater(() => overviewScope.requestOverviewFocus());

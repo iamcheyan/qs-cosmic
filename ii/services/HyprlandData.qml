@@ -57,7 +57,8 @@ Singleton {
         return !ws.name.startsWith("special:");
     }
 
-    // Global overview: workspaces with windows, sorted by id, plus one trailing empty slot.
+    // Global overview: workspaces with windows, ordered by MRU (most-recently-used)
+    // like Win11 Alt+Tab Z-order, plus one trailing empty slot.
     function overviewWorkspaceEntriesGlobal() {
         const regularWorkspaces = root.workspaces
             .filter(ws => root.isRegularWorkspace(ws) && ws.windows > 0)
@@ -98,15 +99,32 @@ Singleton {
             });
         }
 
-        const anchorId = GlobalStates.overviewAnchorWorkspaceId > 0
-            ? GlobalStates.overviewAnchorWorkspaceId
-            : (root.activeWorkspace?.id ?? 0);
-        if (anchorId > 0) {
-            const anchorIdx = model.findIndex(e => e.id === anchorId && !e.isTrailingEmpty);
-            if (anchorIdx > 0) {
-                const [anchorEntry] = model.splice(anchorIdx, 1);
-                model.unshift(anchorEntry);
+        // Reorder by MRU: workspaces in GlobalStates.overviewWorkspaceMru come first
+        // (in MRU order), remaining workspaces keep id-ascending order. The trailing
+        // empty slot always stays at the end.
+        const mru = GlobalStates.overviewWorkspaceMru;
+        if (mru && mru.length > 0) {
+            const trailing = model.filter(e => e.isTrailingEmpty);
+            const nonTrailing = model.filter(e => !e.isTrailingEmpty);
+            const byId = {};
+            nonTrailing.forEach(e => { byId[e.id] = e; });
+
+            const ordered = [];
+            const consumed = {};
+            for (const id of mru) {
+                if (byId[id] && !consumed[id]) {
+                    ordered.push(byId[id]);
+                    consumed[id] = true;
+                }
             }
+            // Append any workspaces not in MRU (e.g. newly created) in id order
+            nonTrailing.forEach(e => {
+                if (!consumed[e.id]) {
+                    ordered.push(e);
+                    consumed[e.id] = true;
+                }
+            });
+            model = ordered.concat(trailing);
         }
 
         return model;

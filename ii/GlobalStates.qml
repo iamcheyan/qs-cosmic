@@ -17,7 +17,7 @@ Singleton {
     property bool osdVolumeOpen: false
     property bool overviewOpen: false
     property int overviewFocusedWorkspaceId: -1
-    property int overviewAnchorWorkspaceId: -1
+    property var overviewWorkspaceMru: []
     property int overviewDraggingFromWorkspace: -1
     property int overviewDraggingTargetWorkspace: -1
     property bool overviewDraggingTargetIsTrailing: false
@@ -37,6 +37,16 @@ Singleton {
         if (GlobalStates.overviewOpen) {
             GlobalStates.appLauncherOpen = false;
         }
+    }
+
+    // MRU (Most Recently Used) workspace list, mirroring Win11 Alt+Tab Z-order.
+    // Promote `wsId` to the front of the list (Win11: switched window → top of Z-order).
+    function promoteWorkspaceMru(wsId) {
+        if (wsId < 1)
+            return;
+        const next = GlobalStates.overviewWorkspaceMru.filter(id => id !== wsId);
+        next.unshift(wsId);
+        GlobalStates.overviewWorkspaceMru = next;
     }
 
     onSidebarRightOpenChanged: {
