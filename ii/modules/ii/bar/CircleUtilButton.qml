@@ -11,7 +11,7 @@ RippleButton {
 
     padding: 0
     implicitHeight: Math.max(content.implicitHeight, 20)
-    implicitWidth: implicitHeight
+    implicitWidth: Math.max(content.implicitWidth, 20)
     contentItem: content
 
     colBackground: ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
