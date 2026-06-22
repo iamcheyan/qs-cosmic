@@ -1,4 +1,5 @@
 import qs.modules.ii.bar.weather
+import qs.modules.ii.bar.modules
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -149,6 +150,10 @@ Item { // Bar content region
             }
         }
 
+        RightModuleRegistry {
+            id: rightModuleRegistry
+        }
+
         // Visual content
 
         RowLayout {
@@ -157,276 +162,17 @@ Item { // Bar content region
             spacing: 16
             layoutDirection: Qt.RightToLeft
 
-            RippleButton { // Right sidebar button
-                id: rightSidebarButton
-
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.rightMargin: 5
-                Layout.fillWidth: false
-
-                implicitWidth: indicatorsRowLayout.implicitWidth
-                implicitHeight: indicatorsRowLayout.implicitHeight
-
-                buttonRadius: Appearance.rounding.full
-                colBackground: ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
-                colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
-                colRipple: ColorUtils.transparentize(Appearance.colors.colLayer1Active, 1)
-                colBackgroundToggled: ColorUtils.transparentize(Appearance.colors.colSecondaryContainer, 1)
-                colBackgroundToggledHover: ColorUtils.transparentize(Appearance.colors.colSecondaryContainerHover, 1)
-                colRippleToggled: ColorUtils.transparentize(Appearance.colors.colSecondaryContainerActive, 1)
-                toggled: GlobalStates.sidebarRightOpen
-                property color colText: toggled ? Appearance.m3colors.m3onSecondaryContainer : Appearance.colors.colOnLayer0
-
-                Behavior on colText {
-                    animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-                }
-
-                onPressed: {
-                    GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-                }
-
-                RowLayout {
-                    id: indicatorsRowLayout
-                    anchors.centerIn: parent
-                    property real realSpacing: 0
-                    spacing: 0
-
-                    Revealer {
-                        reveal: Audio.sink?.audio?.muted ?? false
-                        Layout.fillHeight: true
-                        Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
-                        Behavior on Layout.rightMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-                        }
-                        CosmicIcon {
-                            name: "status/audio-volume-muted-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger
-                            color: rightSidebarButton.colText
-                        }
-                    }
-                    Revealer {
-                        reveal: Audio.source?.audio?.muted ?? false
-                        Layout.fillHeight: true
-                        Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
-                        Behavior on Layout.rightMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-                        }
-                        CosmicIcon {
-                            name: "status/microphone-sensitivity-muted-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger
-                            color: rightSidebarButton.colText
-                        }
-                    }
-                    HyprlandXkbIndicator {
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.rightMargin: indicatorsRowLayout.realSpacing
-                        color: rightSidebarButton.colText
-                    }
-                    Revealer {
-                        reveal: Notifications.silent || Notifications.unread > 0
-                        Layout.fillHeight: true
-                        Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
-                        implicitHeight: reveal ? notificationUnreadCount.implicitHeight : 0
-                        implicitWidth: reveal ? notificationUnreadCount.implicitWidth : 0
-                        Behavior on Layout.rightMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-                        }
-                        NotificationUnreadCount {
-                            id: notificationUnreadCount
-                        }
-                    }
-                    CosmicIcon {
-                        name: "actions/system-shutdown-symbolic"
-                        iconSize: Appearance.font.pixelSize.larger
-                        color: rightSidebarButton.colText
-                    }
-                }
-            }
-
-            RowLayout {
-                id: utilityButtonsRow
-                visible: root.useShortenedForm === 0
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.fillHeight: true
-                spacing: 16
-                layoutDirection: Qt.RightToLeft
-
-                CircleUtilButton {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            Repeater {
+                model: Config.options.bar.rightModules
+                delegate: Loader {
+                    required property string modelData
                     Layout.fillHeight: true
-                    onClicked: {
-                        GlobalStates.barDialogType = "bluetooth";
-                        GlobalStates.barDialogOpen = true;
+                    sourceComponent: {
+                        const comp = rightModuleRegistry.componentForName(modelData);
+                        return comp;
                     }
-                    Item {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        property bool hovered: parent.hovered
-                        CosmicIcon {
-                            anchors.centerIn: parent
-                            name: BluetoothStatus.connected ? "status/bluetooth-active-symbolic" : BluetoothStatus.enabled ? "devices/bluetooth-symbolic" : "status/bluetooth-disabled-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger + 1
-                            color: Appearance.colors.colOnLayer0
-                        }
-                        PopupToolTip {
-                            text: Translation.tr("Bluetooth")
-                            anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                        }
-                    }
+                    active: sourceComponent !== null
                 }
-
-                CircleUtilButton {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.fillHeight: true
-                    onClicked: {
-                        GlobalStates.barDialogType = "wifi";
-                        GlobalStates.barDialogOpen = true;
-                    }
-                    Item {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        property bool hovered: parent.hovered
-                        CosmicIcon {
-                            anchors.centerIn: parent
-                            name: Network.cosmicIcon
-                            iconSize: Appearance.font.pixelSize.larger + 1
-                            color: Appearance.colors.colOnLayer0
-                        }
-                        PopupToolTip {
-                            text: Translation.tr("Connect to Wi-Fi")
-                            anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                        }
-                    }
-                }
-
-                CircleUtilButton {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.fillHeight: true
-                    onClicked: {
-                        GlobalStates.barDialogType = "clipboard";
-                        GlobalStates.barDialogOpen = true;
-                    }
-                    Item {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        property bool hovered: parent.hovered
-                        CosmicIcon {
-                            anchors.centerIn: parent
-                            name: "actions/edit-paste-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger + 1
-                            color: Appearance.colors.colOnLayer0
-                        }
-                        PopupToolTip {
-                            text: Translation.tr("Clipboard")
-                            anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                        }
-                    }
-                }
-
-                UtilButtons {
-                    visible: Config.options.bar.verbose
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                }
-
-                CircleUtilButton {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.fillHeight: true
-                    onClicked: {
-                        GlobalStates.barDialogType = "nightlight";
-                        GlobalStates.barDialogOpen = true;
-                    }
-                    Item {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        property bool hovered: parent.hovered
-                        CosmicIcon {
-                            anchors.centerIn: parent
-                            name: Hyprsunset.temperatureActive ? "status/weather-clear-night-symbolic" : "status/display-brightness-off-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger + 1
-                            color: Hyprsunset.temperatureActive ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
-                        }
-                        PopupToolTip {
-                            text: Translation.tr("Night Light")
-                            anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                        }
-                    }
-                }
-
-                CircleUtilButton {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.fillHeight: true
-                    onClicked: Idle.toggleInhibit()
-                    Item {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        property bool hovered: parent.hovered
-                        CosmicIcon {
-                            anchors.centerIn: parent
-                            name: Idle.inhibit ? "actions/document-properties-symbolic" : "actions/image-red-eye-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger + 1
-                            color: Idle.inhibit ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
-                        }
-                        PopupToolTip {
-                            text: Idle.inhibit ? Translation.tr("Auto-sleep disabled") : Translation.tr("Auto-sleep enabled")
-                            anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                        }
-                    }
-                }
-
-                CircleUtilButton {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    Layout.fillHeight: true
-                    onClicked: {
-                        GlobalStates.barDialogType = "audio";
-                        GlobalStates.barDialogOpen = true;
-                    }
-                    Item {
-                        implicitWidth: 20
-                        implicitHeight: 20
-                        property bool hovered: parent.hovered
-                        CosmicIcon {
-                            anchors.centerIn: parent
-                            name: Audio.sink?.audio?.muted ? "status/audio-volume-muted-symbolic" : "status/audio-volume-high-symbolic"
-                            iconSize: Appearance.font.pixelSize.larger + 1
-                            color: Appearance.colors.colOnLayer0
-                        }
-                        PopupToolTip {
-                            text: Translation.tr("Audio output")
-                            anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                        }
-                    }
-                }
-            }
-
-            BatteryIndicator {
-                visible: Battery.available && root.useShortenedForm === 0
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.fillHeight: true
-            }
-
-            Media {
-                visible: root.useShortenedForm === 0
-                Layout.fillHeight: true
-            }
-
-            SysTray {
-                visible: root.useShortenedForm === 0
-                Layout.fillWidth: false
-                Layout.fillHeight: true
-                invertSide: Config?.options.bar.bottom
-                showSeparator: false
-            }
-
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-
-            // Weather
-            Loader {
-                Layout.leftMargin: 5
-                active: Config.options.bar.weather.enable
-                sourceComponent: WeatherBar {}
             }
         }
     }

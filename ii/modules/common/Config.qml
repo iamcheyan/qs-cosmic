@@ -198,8 +198,23 @@ Singleton {
                 property bool floatStyleShadow: true // Show shadow behind bar when cornerStyle == 1 (Float)
                 property bool borderless: false // true for no grouping of items
                 property bool showBackground: true
-                property bool verbose: true
                 property bool vertical: false
+                property list<string> rightModules: [
+                    "weather",
+                    "systray",
+                    "media",
+                    "battery",
+                    "util:bluetooth",
+                    "util:wifi",
+                    "util:clipboard",
+                    "util:screenshot",
+                    "util:colorpicker",
+                    "util:mic",
+                    "util:nightlight",
+                    "util:idle",
+                    "util:audio",
+                    "sidebar"
+                ]
                 property JsonObject resources: JsonObject {
                     property bool alwaysShowSwap: true
                     property bool alwaysShowCpu: true
@@ -209,13 +224,6 @@ Singleton {
                 }
                 property list<string> screenList: [] // Non-empty: show bar only on these monitors (hyprctl monitors)
                 property bool showOnFocusedMonitorOnly: false // When screenList is empty, show bars on all monitors
-                property JsonObject utilButtons: JsonObject {
-                    property bool showScreenSnip: true
-                    property bool showColorPicker: false
-                    property bool showMicToggle: false
-                    property bool showPerformanceProfileToggle: false
-                    property bool showScreenRecord: false
-                }
                 property JsonObject weather: JsonObject {
                     property bool enable: false
                     property bool enableGPS: true // IP-based location (wttr.in resolves via IP); when false, uses city

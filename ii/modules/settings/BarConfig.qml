@@ -160,54 +160,12 @@ ContentPage {
 
         ConfigRow {
             uniform: true
-            ConfigSwitch {
-                buttonIcon: "content_cut"
-                text: Translation.tr("Screen snip")
-                checked: Config.options.bar.utilButtons.showScreenSnip
-                onCheckedChanged: {
-                    Config.options.bar.utilButtons.showScreenSnip = checked;
-                }
-            }
-            ConfigSwitch {
-                buttonIcon: "colorize"
-                text: Translation.tr("Color picker")
-                checked: Config.options.bar.utilButtons.showColorPicker
-                onCheckedChanged: {
-                    Config.options.bar.utilButtons.showColorPicker = checked;
-                }
-            }
-        }
-        ConfigRow {
-            uniform: true
-            ConfigSwitch {
-                buttonIcon: "mic"
-                text: Translation.tr("Mic toggle")
-                checked: Config.options.bar.utilButtons.showMicToggle
-                onCheckedChanged: {
-                    Config.options.bar.utilButtons.showMicToggle = checked;
-                }
-            }
-        }
-        ConfigRow {
-            uniform: true
-            ConfigSwitch {
-                buttonIcon: "speed"
-                text: Translation.tr("Performance Profile toggle")
-                checked: Config.options.bar.utilButtons.showPerformanceProfileToggle
-                onCheckedChanged: {
-                    Config.options.bar.utilButtons.showPerformanceProfileToggle = checked;
-                }
-            }
-        }
-        ConfigRow {
-            uniform: true
-            ConfigSwitch {
-                buttonIcon: "videocam"
-                text: Translation.tr("Record")
-                checked: Config.options.bar.utilButtons.showScreenRecord
-                onCheckedChanged: {
-                    Config.options.bar.utilButtons.showScreenRecord = checked;
-                }
+            StyledText {
+                Layout.fillWidth: true
+                text: Translation.tr("Right-side modules are configured via 'bar.rightModules' in config.json. See docs/bar-right-modules.md for available module names.")
+                color: Appearance.tiling.textDim
+                font.pixelSize: Appearance.font.pixelSize.small
+                wrapMode: Text.Wrap
             }
         }
     }

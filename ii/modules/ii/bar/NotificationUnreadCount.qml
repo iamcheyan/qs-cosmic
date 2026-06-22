@@ -5,6 +5,7 @@ import qs.modules.common.widgets
 
 Item {
     id: root
+    property color color: Appearance.colors.colOnLayer0
     readonly property bool showUnreadCount: Config.options.bar.indicators.notifications.showUnreadCount
     implicitWidth: notificationIcon.implicitWidth
     implicitHeight: notificationIcon.implicitHeight
@@ -14,7 +15,7 @@ Item {
         anchors.fill: parent
         name: Notifications.silent ? "status/notification-disabled-symbolic" : "status/notification-symbolic"
         iconSize: Appearance.font.pixelSize.larger
-        color: rightSidebarButton.colText
+        color: root.color
     }
 
     Rectangle {

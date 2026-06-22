@@ -92,7 +92,7 @@ Item {
         }
 
         StyledText {
-            visible: Config.options.bar.verbose && (activePlayer !== null && activePlayer !== undefined)
+            visible: (activePlayer !== null && activePlayer !== undefined)
             width: rowLayout.width - (CircularProgress.size + rowLayout.spacing * 2)
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true // Ensures the text takes up available space
