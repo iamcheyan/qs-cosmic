@@ -31,7 +31,6 @@ ApplicationWindow {
     title: Translation.tr("illogical-impulse Welcome")
 
     Component.onCompleted: {
-        MaterialThemeLoader.reapplyTheme();
         Config.readWriteDelay = 0 // Welcome app always only sets one var at a time so delay isn't needed
     }
 
@@ -222,16 +221,6 @@ ApplicationWindow {
                 ContentSection {
                     icon: "format_paint"
                     title: Translation.tr("Style & wallpaper")
-
-                    ButtonGroup {
-                        Layout.alignment: Qt.AlignHCenter
-                        LightDarkPreferenceButton {
-                            dark: false
-                        }
-                        LightDarkPreferenceButton {
-                            dark: true
-                        }
-                    }
 
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter

@@ -41,7 +41,6 @@ ShellRoot {
             "( sleep 3; kill -9 \"$pid\" 2>/dev/null ) & " +
             "done"])
 
-        MaterialThemeLoader.reapplyTheme()
         Hyprsunset.load()
         FirstRunExperience.load()
         ConflictKiller.load()

@@ -139,35 +139,5 @@ Item {
                 }
             }
         }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showDarkModeToggle
-            visible: Config.options.bar.utilButtons.showDarkModeToggle
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
-                onClicked: event => {
-                    if (Appearance.m3colors.darkmode) {
-                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode light --noswitch`])
-                    } else {
-                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode dark --noswitch`])
-                    }
-                }
-                Item {
-                    implicitWidth: 20
-                    implicitHeight: 20
-                    property bool hovered: parent.hovered
-                    CosmicIcon {
-                        anchors.centerIn: parent
-                        name: Appearance.m3colors.darkmode ? "status/display-brightness-high-symbolic" : "status/display-brightness-low-symbolic"
-                        iconSize: Appearance.font.pixelSize.larger + 1
-                        color: Appearance.colors.colOnLayer2
-                    }
-                    PopupToolTip {
-                        text: Translation.tr("Dark Mode")
-                        anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
-                    }
-                }
-            }
-        }
     }
 }

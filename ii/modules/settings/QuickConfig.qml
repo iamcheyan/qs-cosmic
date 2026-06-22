@@ -9,46 +9,6 @@ import qs.modules.common.functions
 ContentPage {
     forceWidth: true
 
-    component SmallLightDarkPreferenceButton: RippleButton {
-        id: smallLightDarkPreferenceButton
-        required property bool dark
-        property color colText: toggled ? Appearance.tiling.textBright : Appearance.tiling.text
-        padding: 5
-        Layout.fillWidth: true
-        toggled: Appearance.m3colors.darkmode === dark
-        buttonRadius: 0
-        buttonRadiusPressed: 0
-        rippleEnabled: false
-        colBackground: toggled ? Appearance.tiling.bgActive : Appearance.tiling.bg
-        colBackgroundHover: Appearance.tiling.bgHover
-        colRipple: Appearance.tiling.bgActive
-        borderWidth: Appearance.tiling.borderWidth
-        borderColor: toggled ? Appearance.tiling.borderFocus : Appearance.tiling.border
-        onClicked: {
-            Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`]);
-        }
-        contentItem: Item {
-            anchors.centerIn: parent
-            ColumnLayout {
-                anchors.centerIn: parent
-                spacing: 0
-                MaterialSymbol {
-                    Layout.alignment: Qt.AlignHCenter
-                    iconSize: 30
-                    text: dark ? "dark_mode" : "light_mode"
-                    color: smallLightDarkPreferenceButton.colText
-                }
-                StyledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: dark ? Translation.tr("Dark") : Translation.tr("Light")
-                    font.family: Appearance.font.family.monospace
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: smallLightDarkPreferenceButton.colText
-                }
-            }
-        }
-    }
-
     // Wallpaper selection
     ContentSection {
         icon: "format_paint"
@@ -116,21 +76,6 @@ ContentPage {
                                 }
                             }
                         }
-                    }
-                }
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    uniformCellSizes: true
-
-                    SmallLightDarkPreferenceButton {
-                        Layout.fillHeight: true
-                        dark: false
-                    }
-                    SmallLightDarkPreferenceButton {
-                        Layout.fillHeight: true
-                        dark: true
                     }
                 }
             }
