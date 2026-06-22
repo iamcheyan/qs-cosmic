@@ -16,8 +16,7 @@ Item { // Bar content region
 
     readonly property int barSidePadding: 6
     readonly property int titleAreaWidth: 280
-    readonly property color barOpaqueColor: ColorUtils.transparentize(Appearance.m3colors.m3background, 0.2)
-    property bool isHovered: false
+    readonly     property color barOpaqueColor: ColorUtils.transparentize(Appearance.m3colors.m3background, 0.2)
     readonly property bool anyChildActive: GlobalStates.barDialogOpen
         || GlobalStates.sidebarRightOpen
         || GlobalStates.scheduleOpen
@@ -40,7 +39,7 @@ Item { // Bar content region
             win => win.mapped && !win.hidden
         );
     }
-    readonly property color barBackgroundColor: root.isHovered || (Config.options.bar.showBackground && root.workspaceHasWindows)
+    readonly property color barBackgroundColor: Config.options.bar.showBackground && root.workspaceHasWindows
         ? root.barOpaqueColor
         : "transparent"
     property var brightnessMonitor: Brightness.getMonitorForScreen(screen)

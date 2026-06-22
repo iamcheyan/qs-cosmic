@@ -31,30 +31,8 @@ Scope {
                 id: barRoot
                 screen: barLoader.modelData
 
-                Timer {
-                    id: showBarTimer
-                    interval: (Config?.options.bar.autoHide.showWhenPressingSuper.delay ?? 100)
-                    repeat: false
-                    onTriggered: {
-                        barRoot.superShow = true
-                    }
-                }
-                Connections {
-                    target: GlobalStates
-                    function onSuperDownChanged() {
-                        if (!Config?.options.bar.autoHide.showWhenPressingSuper.enable) return;
-                        if (GlobalStates.superDown) showBarTimer.restart();
-                        else {
-                            showBarTimer.stop();
-                            barRoot.superShow = false;
-                        }
-                    }
-                }
-                property bool superShow: false
-                property bool mustShow: hoverRegion.containsMouse || superShow
                 exclusionMode: ExclusionMode.Ignore
-                exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 :
-                    Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
+                exclusiveZone: Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
                 WlrLayershell.namespace: "quickshell:bar"
                 implicitHeight: Appearance.sizes.barHeight + Appearance.rounding.screenRounding
                 mask: Region {
@@ -94,16 +72,11 @@ Scope {
 
                     Item {
                         id: hoverMaskRegion
-                        anchors {
-                            fill: barContent
-                            topMargin: -Config.options.bar.autoHide.hoverRegionWidth
-                            bottomMargin: -Config.options.bar.autoHide.hoverRegionWidth
-                        }
+                        anchors.fill: barContent
                     }
 
                     BarContent {
                         id: barContent
-                        isHovered: hoverRegion.containsMouse || barContent.anyChildActive
                         
                         implicitHeight: Appearance.sizes.barHeight
                         anchors {
@@ -111,12 +84,8 @@ Scope {
                             left: parent.left
                             top: parent.top
                             bottom: undefined
-                            topMargin: (Config?.options.bar.autoHide.enable && !mustShow) ? -Appearance.sizes.barHeight : 0
                             bottomMargin: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.bottom) * -1
                             rightMargin: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.right) * -1
-                        }
-                        Behavior on anchors.topMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                         }
                         Behavior on anchors.bottomMargin {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -137,7 +106,7 @@ Scope {
                             PropertyChanges {
                                 target: barContent
                                 anchors.topMargin: 0
-                                anchors.bottomMargin: (Config?.options.bar.autoHide.enable && !mustShow) ? -Appearance.sizes.barHeight : 0
+                                anchors.bottomMargin: 0
                             }
                         }
                     }
