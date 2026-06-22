@@ -200,20 +200,21 @@ Singleton {
                 property bool showBackground: true
                 property bool vertical: false
                 property list<string> rightModules: [
-                    "weather",
-                    "systray",
-                    "media",
-                    "battery",
-                    "util:bluetooth",
-                    "util:wifi",
-                    "util:clipboard",
-                    "util:screenshot",
-                    "util:colorpicker",
-                    "util:mic",
-                    "util:nightlight",
-                    "util:idle",
+                    "sidebar",
                     "util:audio",
-                    "sidebar"
+                    "util:idle",
+                    "util:nightlight",
+                    "util:mic",
+                    "util:colorpicker",
+                    "util:screenshot",
+                    "util:clipboard",
+                    "util:wifi",
+                    "util:bluetooth",
+                    "battery",
+                    "media",
+                    "systray",
+                    "spacer",
+                    "weather"
                 ]
                 property JsonObject resources: JsonObject {
                     property bool alwaysShowSwap: true
