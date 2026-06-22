@@ -14,7 +14,7 @@ import qs.modules.common.functions
 Item { // Bar content region
     id: root
 
-    readonly property int barSidePadding: 6
+    readonly property int barSidePadding: 10
     readonly property int titleAreaWidth: 280
     readonly     property color barOpaqueColor: ColorUtils.transparentize(Appearance.m3colors.m3background, 0.2)
     readonly property bool anyChildActive: GlobalStates.barDialogOpen
@@ -158,7 +158,12 @@ Item { // Bar content region
 
         RowLayout {
             id: rightSectionRowLayout
-            anchors.fill: parent
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                right: parent.right
+            }
+            width: implicitWidth
             spacing: Config.options.bar.rightModuleSpacing
             layoutDirection: Qt.RightToLeft
 

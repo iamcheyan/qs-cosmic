@@ -50,7 +50,7 @@
 | `media` | 媒体控制 |
 | `battery` | 电池 |
 | `sidebar` | 右侧边栏按钮（音量/麦克风静音/键盘布局/通知/电源指示） |
-| `spacer` | 弹性占位空间（fillWidth，把两侧模块推开） |
+| `spacer` | 兼容旧配置的零宽占位；不会额外撑开模块 |
 | `util:bluetooth` | 蓝牙对话框 |
 | `util:wifi` | WiFi 对话框 |
 | `util:clipboard` | 剪贴板对话框 |
@@ -102,4 +102,4 @@
   `rightModules`，`spacing` 绑定到 `rightModuleSpacing`
 - 各模块组件在 `ii/modules/ii/bar/modules/` 目录
 - `SidebarIndicators.qml`：从原 BarContent 抽出的右侧边栏指示器
-- `SpacerItem.qml`：弹性占位，`Layout.fillWidth: true`
+- `SpacerItem.qml`：零宽占位，保留旧配置里的 `"spacer"` 不会影响间距
