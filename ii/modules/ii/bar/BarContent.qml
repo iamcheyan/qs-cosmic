@@ -158,7 +158,7 @@ Item { // Bar content region
         RowLayout {
             id: rightSectionRowLayout
             anchors.fill: parent
-            spacing: 16
+            spacing: 0
             layoutDirection: Qt.RightToLeft
 
             Repeater {
