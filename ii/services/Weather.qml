@@ -4,7 +4,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import QtPositioning
 
 import qs.modules.common
 
@@ -14,7 +13,9 @@ Singleton {
     readonly property int fetchInterval: Config.options.bar.weather.fetchInterval * 60 * 1000
     readonly property string city: Config.options.bar.weather.city
     readonly property bool useUSCS: Config.options.bar.weather.useUSCS
-    property bool gpsActive: Config.options.bar.weather.enableGPS
+    // When true, wttr.in is queried without a location so it falls back to
+    // IP-based geolocation. When false, the configured city is used.
+    property bool useIpLocation: Config.options.bar.weather.enableGPS
 
     onUseUSCSChanged: {
         root.getData();
@@ -22,12 +23,9 @@ Singleton {
     onCityChanged: {
         root.getData();
     }
-
-    property var location: ({
-        valid: false,
-        lat: 0,
-        lon: 0
-    })
+    onUseIpLocationChanged: {
+        root.getData();
+    }
 
     property var data: ({
         uv: 0,
@@ -83,8 +81,8 @@ Singleton {
     function getData() {
         let command = "curl -s wttr.in";
 
-        if (root.gpsActive && root.location.valid) {
-            command += `/${root.location.lat},${root.location.long}`;
+        if (root.useIpLocation) {
+            // No location argument: wttr.in resolves via IP geolocation.
         } else {
             command += `/${formatCityName(root.city)}`;
         }
@@ -103,9 +101,7 @@ Singleton {
     }
 
     Component.onCompleted: {
-        if (!root.gpsActive) return;
-        console.info("[WeatherService] Starting the GPS service.");
-        positionSource.start();
+        root.getData();
     }
 
     Process {
@@ -118,7 +114,6 @@ Singleton {
                 try {
                     const parsedData = JSON.parse(text);
                     root.refineData(parsedData);
-                    // console.info(`[ data: ${JSON.stringify(parsedData)}`);
                 } catch (e) {
                     console.error(`[WeatherService] ${e.message}`);
                 }
@@ -126,42 +121,11 @@ Singleton {
         }
     }
 
-    PositionSource {
-        id: positionSource
-        updateInterval: root.fetchInterval
-
-        onPositionChanged: {
-            // update the location if the given location is valid
-            // if it fails getting the location, use the last valid location
-            if (position.latitudeValid && position.longitudeValid) {
-                root.location.lat = position.coordinate.latitude;
-                root.location.long = position.coordinate.longitude;
-                root.location.valid = true;
-                // console.info(`📍 Location: ${position.coordinate.latitude}, ${position.coordinate.longitude}`);
-                root.getData();
-                // if can't get initialized with valid location deactivate the GPS
-            } else {
-                root.gpsActive = root.location.valid ? true : false;
-                console.error("[WeatherService] Failed to get the GPS location.");
-            }
-        }
-
-        onValidityChanged: {
-            if (!positionSource.valid) {
-                positionSource.stop();
-                root.location.valid = false;
-                root.gpsActive = false;
-                Quickshell.execDetached(["notify-send", Translation.tr("Weather Service"), Translation.tr("Cannot find a GPS service. Using the fallback method instead."), "-a", "Shell"]);
-                console.error("[WeatherService] Could not aquire a valid backend plugin.");
-            }
-        }
-    }
-
     Timer {
-        running: !root.gpsActive
+        running: true
         repeat: true
         interval: root.fetchInterval
-        triggeredOnStart: !root.gpsActive
+        triggeredOnStart: false
         onTriggered: root.getData()
     }
 }

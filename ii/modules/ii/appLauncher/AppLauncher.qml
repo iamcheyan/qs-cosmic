@@ -452,7 +452,7 @@ PanelWindow {
                     boundsMovement: Flickable.StopAtBounds
                     flickDeceleration: 2800
                     maximumFlickVelocity: 5200
-                    reuseItems: true
+                    reuseItems: false
 
                     delegate: Item {
                         id: appItem

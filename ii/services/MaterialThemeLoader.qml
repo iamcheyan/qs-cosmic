@@ -67,10 +67,17 @@ Singleton {
             delayedFileRead.start()
         }
         onLoadedChanged: {
+            if (!themeFileView.loaded)
+                return;
             const fileContent = themeFileView.text()
+            if (!fileContent || fileContent.length === 0)
+                return;
             root.applyColors(fileContent)
         }
-        onLoadFailed: root.resetFilePathNextTime();
+        onLoadFailed: {
+            console.warn("[MaterialThemeLoader] No generated colors.json yet; theme will apply after wallpaper switch.")
+            root.resetFilePathNextTime()
+        }
     }
 
     function toggleLightDark() {

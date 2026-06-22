@@ -62,18 +62,5 @@ StyledPopup {
                 }
             }
         }
-
-        StyledPopupValueRow {
-            icon: "status/weather-windy-symbolic"
-            label: Translation.tr("Power mode:")
-            value: {
-                switch(PowerProfiles.profile) {
-                    case PowerProfile.PowerSaver: return Translation.tr("Power Saver");
-                    case PowerProfile.Balanced: return Translation.tr("Balanced");
-                    case PowerProfile.Performance: return Translation.tr("Performance");
-                    default: return Translation.tr("Balanced");
-                }
-            }
-        }
     }
 }

@@ -125,7 +125,7 @@ ContentPage {
         ConfigRow {
             ConfigSwitch {
                 buttonIcon: "assistant_navigation"
-                text: Translation.tr("Enable GPS based location")
+                text: Translation.tr("Use IP-based location")
                 checked: Config.options.bar.weather.enableGPS
                 onCheckedChanged: {
                     Config.options.bar.weather.enableGPS = checked;

@@ -55,6 +55,14 @@ Singleton {
         generatedTranslationFileView.reread();
     }
 
+    Component.onCompleted: {
+        // Ensure the generated-translations directory and a placeholder for the
+        // current language exist so FileView does not warn about missing files.
+        const dir = root.generatedTranslationsDir;
+        const lang = root.languageCode;
+        Quickshell.execDetached(["bash", "-c", `mkdir -p '${dir}' && [ -f '${dir}/${lang}.json' ] || echo '{}' > '${dir}/${lang}.json'`]);
+    }
+
     TranslationReader {
         id: translationFileView
         translationsDir: root.translationsDir

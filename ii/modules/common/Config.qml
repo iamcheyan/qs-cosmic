@@ -219,7 +219,7 @@ Singleton {
                 }
                 property JsonObject weather: JsonObject {
                     property bool enable: false
-                    property bool enableGPS: true // gps based location
+                    property bool enableGPS: true // IP-based location (wttr.in resolves via IP); when false, uses city
                     property string city: "" // When 'enableGPS' is false
                     property bool useUSCS: false // Instead of metric (SI) units
                     property int fetchInterval: 10 // minutes
