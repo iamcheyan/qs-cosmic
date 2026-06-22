@@ -164,7 +164,7 @@ ContentPage {
             mainText: justCopied ? Translation.tr("Path copied") : Translation.tr("Copy path")
             onClicked: {
                 copyPathButton.justCopied = true
-                Quickshell.clipboardText = FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
+                Quickshell.clipboardText = FileUtils.trimFileProtocol(`${Directories.config}/quickshell/config.json`);
                 revertTextTimer.restart();
             }
             Timer {

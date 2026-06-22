@@ -225,10 +225,10 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         buttonText: justCopied ? "copied" : "config file"
                         onClicked: {
-                            Qt.openUrlExternally(`${Directories.config}/illogical-impulse/config.json`);
+                            Qt.openUrlExternally(`${Directories.config}/quickshell/config.json`);
                         }
                         onRightClicked: {
-                            Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
+                            Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/quickshell/config.json`);
                             configPathButton.justCopied = true;
                             revertTextTimer.restart()
                         }
@@ -268,7 +268,7 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         buttonText: "copy path"
                         onClicked: {
-                            Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/illogical-impulse/config.json`);
+                            Quickshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/quickshell/config.json`);
                             configPathButton.justCopied = true;
                             revertTextTimer.restart();
                         }

@@ -2,7 +2,7 @@
 
 ## 用法
 
-在 `~/.config/illogical-impulse/config.json` 的 `bar` 对象里配置两个属性：
+在 `~/.config/quickshell/config.json` 的 `bar` 对象里配置两个属性：
 
 ```json
 "bar": {
